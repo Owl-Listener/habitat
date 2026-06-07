@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Owl-Listener/habitat/schema/component.schema.json",
+  "title": "habitat component contract",
+  "description": "The machine-readable contract every habitat component must satisfy. Each field exists because an agent needs it to use the component without guessing. Fields map one-to-one to the checks in agent-ready.",
+  "type": "object",
+  "required": ["name", "purpose", "props", "variants", "states", "tokens", "relationships", "antiPatterns", "accessibility", "content", "codeConnect"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "object",
+      "description": "Canonical name plus any aliases, so the same component is referred to consistently. Maps to agent-ready: naming consistency.",
+      "required": ["canonical"],
+      "properties": {
+        "canonical": { "type": "string", "description": "The one true name, e.g. 'Button'." },
+        "aliases": { "type": "array", "items": { "type": "string" }, "description": "Other names this has been called, to be normalised to the canonical name." }
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20,
+      "description": "Why this component exists and what job it does, described by purpose not appearance. 'Lets a user commit to an action' not 'a rounded rectangle with a label'. Maps to agent-ready: description coverage and quality."
+    },
+    "props": {
+      "type": "array",
+      "description": "Every prop the agent can set, fully typed. Maps to agent-ready: component properties.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "required", "description"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string", "description": "e.g. 'string', 'boolean', \"'primary' | 'secondary' | 'ghost'\"." },
+          "required": { "type": "boolean" },
+          "default": { "description": "Default value if not required." },
+          "options": { "type": "array", "items": {}, "description": "Allowed values for enum-like props." },
+          "description": { "type": "string", "minLength": 5 }
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "description": "Named variants and, crucially, WHEN to use each. Maps to agent-ready: component coverage and description quality.",
+      "items": {
+        "type": "object",
+        "required": ["name", "whenToUse"],
+        "properties": {
+          "name": { "type": "string" },
+          "whenToUse": { "type": "string", "minLength": 10, "description": "The decision rule the agent should apply to pick this variant." }
+        }
+      }
+    },
+    "states": {
+      "type": "array",
+      "description": "The interaction and status states the component must define. An agent that cannot see a state will not build it. Maps to agent-ready: state completeness.",
+      "items": {
+        "type": "object",
+        "required": ["name", "description"],
+        "properties": {
+          "name": { "type": "string", "description": "e.g. default, hover, focus, active, disabled, loading." },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Which design token is bound to which visual property. Binding, not mere existence, is what an agent can act on. Maps to agent-ready: token binding.",
+      "additionalProperties": { "type": "string" }
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Where this component lives and what it works with, so the agent places it correctly. Maps to agent-ready: relationships and hierarchy.",
+      "properties": {
+        "belongsIn": { "type": "array", "items": { "type": "string" }, "description": "Valid parents or contexts, e.g. 'Form', 'Toolbar'." },
+        "contains": { "type": "array", "items": { "type": "string" }, "description": "What this may contain." },
+        "pairsWith": { "type": "array", "items": { "type": "string" }, "description": "Components commonly used alongside this." }
+      }
+    },
+    "antiPatterns": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Explicit refusals: what the agent must never do with this component. This is the conscience the agent cannot infer on its own. Maps to agent-ready: the refusals that keep generated UI honest.",
+      "items": {
+        "type": "object",
+        "required": ["never", "because"],
+        "properties": {
+          "never": { "type": "string", "description": "The forbidden action, e.g. 'place two primary buttons in the same view'." },
+          "because": { "type": "string", "description": "The reason, so the rule survives paraphrase." }
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "How the component behaves for assistive technology and keyboards. Maps to agent-ready: accessibility annotations.",
+      "required": ["role", "keyboard", "focus"],
+      "properties": {
+        "role": { "type": "string" },
+        "keyboard": { "type": "array", "items": { "type": "string" }, "description": "Key interactions, e.g. 'Enter and Space activate'." },
+        "focus": { "type": "string", "description": "Focus behaviour and visible focus treatment." },
+        "aria": { "type": "array", "items": { "type": "string" }, "description": "Required ARIA attributes and when." },
+        "contrast": { "type": "string", "description": "Contrast guarantees the variants meet." }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Real example content, never lorem ipsum, so the agent sees how the component is actually used. Maps to agent-ready: real content.",
+      "required": ["examples"],
+      "properties": {
+        "examples": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "codeConnect": {
+      "type": "object",
+      "description": "The bridge from this contract to the real implementation, and the mapping between described props and code props. Maps to agent-ready: the Code Connect bridge.",
+      "required": ["implementation", "propMap"],
+      "properties": {
+        "implementation": { "type": "string", "description": "Path to the component source, e.g. './Button.tsx'." },
+        "propMap": { "type": "object", "description": "Contract prop name to code prop name.", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "agentNotes": {
+      "type": "string",
+      "description": "Optional free-text guidance to the agent that does not fit the structured fields."
+    }
+  }
+}

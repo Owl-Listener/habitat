@@ -1,0 +1,46 @@
+/* Generated from tokens/tokens.json. Do not edit by hand; edit the source and regenerate. */
+:root {
+  /* color.brand */
+  --color-brand-default: #1f6f6b;
+  --color-brand-hover: #1a605c;
+  --color-brand-active: #154f4c;
+
+  /* color.surface */
+  --color-surface-default: #ffffff;
+  --color-surface-muted: #f4f6f6;
+
+  /* color.text */
+  --color-text-on-brand: #ffffff;
+  --color-text-default: #16201f;
+  --color-text-muted: #5b6b6a;
+
+  /* color.border */
+  --color-border-default: #d4dbda;
+  --color-border-strong: #16201f;
+
+  /* color.state */
+  --color-state-disabled-surface: #e7eaea;
+  --color-state-disabled-text: #9aa6a5;
+  --color-state-focus-ring: #1f6f6b;
+
+  /* space */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+
+  /* radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  /* type */
+  --type-family: system-ui, sans-serif;
+  --type-size-sm: 14px;
+  --type-size-md: 16px;
+  --type-weight-regular: 400;
+  --type-weight-medium: 550;
+
+  /* motion */
+  --motion-fast: 120ms;
+}
