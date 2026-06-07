@@ -1,0 +1,60 @@
+/* Every value is a token reference. No raw colours, spacing, or radii. */
+
+.habitat-textarea-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.habitat-textarea__label {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  font-weight: var(--type-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.habitat-textarea {
+  font-family: var(--type-family);
+  font-size: var(--type-size-md);
+  color: var(--color-text-default);
+  background-color: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  transition: border-color var(--motion-fast) ease;
+}
+
+.habitat-textarea:focus {
+  outline: none;
+}
+
+.habitat-textarea:focus-visible {
+  border-color: var(--color-state-focus-ring);
+  outline: 2px solid var(--color-state-focus-ring);
+  outline-offset: 2px;
+}
+
+.habitat-textarea:disabled {
+  background-color: var(--color-state-disabled-surface);
+  color: var(--color-state-disabled-text);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+  resize: none;
+}
+
+.habitat-textarea--error {
+  border-color: var(--color-state-error);
+}
+
+.habitat-textarea--error:focus-visible {
+  outline-color: var(--color-state-error);
+}
+
+.habitat-textarea__error {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  color: var(--color-state-error);
+}

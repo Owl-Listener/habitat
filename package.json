@@ -1,6 +1,12 @@
 {
+  "name": "habitat",
+  "version": "0.1.0",
+  "description": "A design system built to be read by agents.",
+  "private": true,
+  "scripts": {
+    "validate": "ajv validate -s schema/component.schema.json -d 'components/**/*.meta.json' --spec=draft7"
+  },
   "devDependencies": {
-    "ajv-cli": "^5.0.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-cli": "^5.0.0"
   }
 }
