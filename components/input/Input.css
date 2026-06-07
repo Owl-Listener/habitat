@@ -1,0 +1,58 @@
+/* Every value is a token reference. No raw colours, spacing, or radii. */
+
+.habitat-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.habitat-input__label {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  font-weight: var(--type-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.habitat-input {
+  font-family: var(--type-family);
+  font-size: var(--type-size-md);
+  color: var(--color-text-default);
+  background-color: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--motion-fast) ease;
+}
+
+.habitat-input:focus {
+  outline: none;
+}
+
+.habitat-input:focus-visible {
+  border-color: var(--color-state-focus-ring);
+  outline: 2px solid var(--color-state-focus-ring);
+  outline-offset: 2px;
+}
+
+.habitat-input:disabled {
+  background-color: var(--color-state-disabled-surface);
+  color: var(--color-state-disabled-text);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+}
+
+.habitat-input--error {
+  border-color: var(--color-state-error);
+}
+
+.habitat-input--error:focus-visible {
+  outline-color: var(--color-state-error);
+}
+
+.habitat-input__error {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  color: var(--color-state-error);
+}

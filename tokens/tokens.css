@@ -22,6 +22,7 @@
   --color-state-disabled-surface: #e7eaea;
   --color-state-disabled-text: #9aa6a5;
   --color-state-focus-ring: #1f6f6b;
+  --color-state-error: #c0392b;
 
   /* space */
   --space-xs: 4px;

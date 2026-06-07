@@ -1,0 +1,133 @@
+{
+  "name": {
+    "canonical": "Input",
+    "aliases": ["text input", "text field", "field"]
+  },
+  "purpose": "Lets a user enter a short piece of free-form text. It is the primary control for collecting typed data such as names, email addresses, search terms, and passwords. For multi-line text, use a Textarea instead.",
+  "props": [
+    {
+      "name": "label",
+      "type": "string",
+      "required": true,
+      "description": "The visible label for the field. Always required — a field without a label is inaccessible."
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "required": false,
+      "default": "text",
+      "options": ["text", "email", "password", "search", "tel", "url"],
+      "description": "The HTML input type. Controls the keyboard on mobile and the browser's built-in validation."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "Hint text shown when the field is empty. Use sparingly — it disappears on input and must not replace a label."
+    },
+    {
+      "name": "errorMessage",
+      "type": "string",
+      "required": false,
+      "description": "When set, puts the field into an error state and displays this message below the input. Must explain what went wrong and how to fix it."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Disables the field. Prefer hiding it or explaining why it is unavailable."
+    }
+  ],
+  "variants": [
+    {
+      "name": "default",
+      "whenToUse": "Any time the user needs to type a short piece of text. This is the standard form field."
+    },
+    {
+      "name": "error",
+      "whenToUse": "After the user has submitted or left the field and the value fails validation. Always pair with an errorMessage that says what went wrong."
+    }
+  ],
+  "states": [
+    { "name": "default", "description": "Resting state. Neutral border, white background." },
+    { "name": "focus", "description": "Keyboard or pointer focus. Border and outline shift to the focus-ring token." },
+    { "name": "disabled", "description": "Non-interactive. Uses disabled surface and text tokens, not-allowed cursor." },
+    { "name": "error", "description": "Validation has failed. Border and message use the error token. aria-invalid is set." }
+  ],
+  "tokens": {
+    "background": "color.surface.default",
+    "text": "color.text.default",
+    "border": "color.border.default",
+    "focus.border": "color.state.focusRing",
+    "focus.ring": "color.state.focusRing",
+    "error.border": "color.state.error",
+    "error.text": "color.state.error",
+    "disabled.background": "color.state.disabledSurface",
+    "disabled.text": "color.state.disabledText",
+    "label.text": "color.text.muted",
+    "radius": "radius.sm",
+    "padding": "space.sm space.md",
+    "font": "type.family",
+    "fontSize": "type.size.md",
+    "labelSize": "type.size.sm",
+    "weight": "type.weight.medium",
+    "transition": "motion.fast"
+  },
+  "relationships": {
+    "belongsIn": ["Form", "Dialog", "SearchBar", "LoginForm"],
+    "contains": ["label", "input element", "optional error message"],
+    "pairsWith": ["Button", "Field", "Textarea", "Select"]
+  },
+  "antiPatterns": [
+    {
+      "never": "Omit the label prop or replace it with only a placeholder.",
+      "because": "A placeholder disappears the moment the user starts typing, leaving them with no way to recall what the field asked for. Screen readers announce the label, not the placeholder. A field without a label is inaccessible."
+    },
+    {
+      "never": "Show an error state before the user has had a chance to interact with the field.",
+      "because": "Pre-emptive errors feel punishing and create anxiety. Validation should fire on blur or submit, not on mount."
+    },
+    {
+      "never": "Set raw colour or spacing values on the input.",
+      "because": "Unbound values are invisible to the design system and to an agent reading it. Always bind to a token."
+    },
+    {
+      "never": "Use an Input for multi-line text entry.",
+      "because": "A single-line input clips long text and sets the wrong expectation. Use a Textarea for anything that might be more than one line."
+    }
+  ],
+  "accessibility": {
+    "role": "textbox (native <input> element)",
+    "keyboard": ["Tab moves focus into the field", "Shift+Tab moves focus out", "Enter may submit the enclosing form"],
+    "focus": "Native focus order. Visible 2px focus ring on :focus-visible using the focus-ring token, offset by 2px. Focus ring colour shifts to error token when in error state.",
+    "aria": [
+      "aria-invalid=\"true\" when in error state",
+      "aria-describedby points to the error message element when errorMessage is set",
+      "label is always associated via htmlFor/id — never use aria-label as a substitute for a visible label"
+    ],
+    "contrast": "Error red on white meets WCAG AA 4.5:1. Disabled text on disabled surface meets WCAG AA 4.5:1 for the default token set."
+  },
+  "content": {
+    "examples": [
+      "Email address",
+      "Full name",
+      "Search",
+      "Password",
+      "Company name",
+      "Please enter a valid email address.",
+      "This field is required."
+    ]
+  },
+  "codeConnect": {
+    "implementation": "./Input.tsx",
+    "propMap": {
+      "label": "label",
+      "type": "type",
+      "placeholder": "placeholder",
+      "errorMessage": "errorMessage",
+      "disabled": "disabled"
+    }
+  },
+  "agentNotes": "Always pass a label that names the data being collected, not the action ('Email address', not 'Enter email'). When building a form, pair each Input with a Button for submission. Never generate a form where the only label context is inside the placeholder."
+}
