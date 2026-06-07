@@ -1,0 +1,140 @@
+{
+  "name": {
+    "canonical": "Textarea",
+    "aliases": ["text area", "multiline input", "multi-line field"]
+  },
+  "purpose": "Lets a user enter multiple lines of free-form text, such as a message, description, or comment. Use when the expected content may exceed a single line. For short, single-line values like names or email addresses, use an Input instead.",
+  "props": [
+    {
+      "name": "label",
+      "type": "string",
+      "required": true,
+      "description": "The visible label for the field. Always required — a field without a label is inaccessible."
+    },
+    {
+      "name": "rows",
+      "type": "number",
+      "required": false,
+      "default": 4,
+      "description": "Initial visible row count. Sets the starting height without constraining the user from resizing."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "Hint text shown when the field is empty. Must not replace the label."
+    },
+    {
+      "name": "errorMessage",
+      "type": "string",
+      "required": false,
+      "description": "When set, puts the field into an error state and displays this message below the textarea. Must explain what went wrong and how to fix it."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Disables the field. Prefer hiding it or explaining why it is unavailable."
+    }
+  ],
+  "variants": [
+    {
+      "name": "default",
+      "whenToUse": "Any time the user needs to enter text that may span more than one line, such as a message body, bio, or description."
+    },
+    {
+      "name": "error",
+      "whenToUse": "After the user has submitted or left the field and the value fails validation. Always pair with an errorMessage that explains what went wrong."
+    }
+  ],
+  "states": [
+    { "name": "default", "description": "Resting state. Neutral border, white background, resize handle visible." },
+    { "name": "focus", "description": "Keyboard or pointer focus. Border and outline shift to the focus-ring token." },
+    { "name": "disabled", "description": "Non-interactive. Uses disabled surface and text tokens, not-allowed cursor, resize removed." },
+    { "name": "error", "description": "Validation has failed. Border and message use the error token. aria-invalid is set." }
+  ],
+  "tokens": {
+    "background": "color.surface.default",
+    "text": "color.text.default",
+    "border": "color.border.default",
+    "focus.border": "color.state.focusRing",
+    "focus.ring": "color.state.focusRing",
+    "error.border": "color.state.error",
+    "error.text": "color.state.error",
+    "disabled.background": "color.state.disabledSurface",
+    "disabled.text": "color.state.disabledText",
+    "label.text": "color.text.muted",
+    "radius": "radius.sm",
+    "padding": "space.sm space.md",
+    "font": "type.family",
+    "fontSize": "type.size.md",
+    "labelSize": "type.size.sm",
+    "weight": "type.weight.medium",
+    "transition": "motion.fast"
+  },
+  "relationships": {
+    "belongsIn": ["Form", "Dialog", "CommentThread", "ProfileEditor"],
+    "contains": ["label", "textarea element", "optional error message"],
+    "pairsWith": ["Button", "Input", "Field"]
+  },
+  "antiPatterns": [
+    {
+      "never": "Omit the label prop or replace it with only a placeholder.",
+      "because": "A placeholder disappears on input, leaving the user unable to recall what the field asked for. Screen readers announce the label, not the placeholder. A field without a label is inaccessible."
+    },
+    {
+      "never": "Set resize: none on the textarea.",
+      "because": "Users resize textareas to fit their content. Removing that control is an imposition that serves the layout, not the person typing. Vertical resize is permitted by default; only remove it on disabled state where interaction is already blocked."
+    },
+    {
+      "never": "Use a Textarea for a single line of text such as a name, email, or search term.",
+      "because": "A tall, resizable field sets the wrong expectation about how much text belongs there. Use an Input for short, single-line values."
+    },
+    {
+      "never": "Show an error state before the user has had a chance to interact with the field.",
+      "because": "Pre-emptive errors feel punishing and create anxiety. Validation should fire on blur or submit, not on mount."
+    },
+    {
+      "never": "Set raw colour or spacing values on the textarea.",
+      "because": "Unbound values are invisible to the design system and to an agent reading it. Always bind to a token."
+    }
+  ],
+  "accessibility": {
+    "role": "textbox with multiline (native <textarea> element)",
+    "keyboard": [
+      "Tab moves focus into the field",
+      "Shift+Tab moves focus out",
+      "Enter inserts a newline — it does not submit the form"
+    ],
+    "focus": "Native focus order. Visible 2px focus ring on :focus-visible using the focus-ring token, offset by 2px. Focus ring colour shifts to error token when in error state.",
+    "aria": [
+      "aria-invalid=\"true\" when in error state",
+      "aria-describedby points to the error message element when errorMessage is set",
+      "label is always associated via htmlFor/id — never use aria-label as a substitute for a visible label"
+    ],
+    "contrast": "Error red on white meets WCAG AA 4.5:1. Disabled text on disabled surface meets WCAG AA 4.5:1 for the default token set."
+  },
+  "content": {
+    "examples": [
+      "Message",
+      "Description",
+      "Additional notes",
+      "Tell us about yourself",
+      "Comments",
+      "Please enter at least 20 characters.",
+      "This field is required."
+    ]
+  },
+  "codeConnect": {
+    "implementation": "./Textarea.tsx",
+    "propMap": {
+      "label": "label",
+      "rows": "rows",
+      "placeholder": "placeholder",
+      "errorMessage": "errorMessage",
+      "disabled": "disabled"
+    }
+  },
+  "agentNotes": "Default rows to 4 unless the surrounding context suggests a specific amount of content — a comment box warrants more rows than a bio field on a compact form. Enter inserts a newline in a textarea; it does not submit the enclosing form. If the form needs a submit on Enter, that belongs on the Button, not here."
+}
