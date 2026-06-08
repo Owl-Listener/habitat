@@ -1,0 +1,138 @@
+{
+  "name": {
+    "canonical": "Select",
+    "aliases": ["dropdown", "select menu", "picker"]
+  },
+  "purpose": "Lets a user choose one option from a predefined list. Use when there are enough options that showing them all at once would crowd the layout — typically more than four. For three or fewer options, prefer radio buttons or a button group so all choices stay visible.",
+  "props": [
+    {
+      "name": "label",
+      "type": "string",
+      "required": true,
+      "description": "The visible label for the field. Always required — a field without a label is inaccessible."
+    },
+    {
+      "name": "options",
+      "type": "Array<{ value: string; label: string }>",
+      "required": true,
+      "description": "The list of choices. Each option needs a machine-readable value and a human-readable label."
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "Empty first option shown before a choice is made, e.g. 'Choose a country'. Disabled so the user cannot re-select it once they have chosen."
+    },
+    {
+      "name": "errorMessage",
+      "type": "string",
+      "required": false,
+      "description": "When set, puts the field into an error state and displays this message below the select. Must explain what went wrong and how to fix it."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Disables the field. Prefer hiding it or explaining why it is unavailable."
+    }
+  ],
+  "variants": [
+    {
+      "name": "default",
+      "whenToUse": "Any time the user needs to pick one value from a list of five or more options where showing all choices at once would crowd the layout."
+    },
+    {
+      "name": "error",
+      "whenToUse": "After the user has submitted or left the field without making a selection, or when the selected value fails validation. Always pair with an errorMessage."
+    }
+  ],
+  "states": [
+    { "name": "default", "description": "Resting state. Neutral border, white background, chevron visible." },
+    { "name": "focus", "description": "Keyboard or pointer focus. Border and outline shift to the focus-ring token." },
+    { "name": "disabled", "description": "Non-interactive. Uses disabled surface and text tokens, not-allowed cursor, chevron dims to disabled text token." },
+    { "name": "error", "description": "Validation has failed. Border and message use the error token. aria-invalid is set." }
+  ],
+  "tokens": {
+    "background": "color.surface.default",
+    "text": "color.text.default",
+    "border": "color.border.default",
+    "focus.border": "color.state.focusRing",
+    "focus.ring": "color.state.focusRing",
+    "error.border": "color.state.error",
+    "error.text": "color.state.error",
+    "disabled.background": "color.state.disabledSurface",
+    "disabled.text": "color.state.disabledText",
+    "label.text": "color.text.muted",
+    "chevron": "color.text.muted",
+    "chevron.disabled": "color.state.disabledText",
+    "radius": "radius.sm",
+    "padding": "space.sm space.xl space.sm space.md",
+    "font": "type.family",
+    "fontSize": "type.size.md",
+    "labelSize": "type.size.sm",
+    "weight": "type.weight.medium",
+    "transition": "motion.fast"
+  },
+  "relationships": {
+    "belongsIn": ["Form", "Dialog", "FilterBar", "SettingsPanel"],
+    "contains": ["label", "select element", "options", "optional placeholder option", "optional error message"],
+    "pairsWith": ["Button", "Input", "Textarea"]
+  },
+  "antiPatterns": [
+    {
+      "never": "Use Select when there are three or fewer options.",
+      "because": "A dropdown hides its options behind a click. When there are only a few choices, radio buttons or a button group keep everything visible and require less effort from the user."
+    },
+    {
+      "never": "Replace the label with only a placeholder.",
+      "because": "A placeholder disappears once a choice is made, leaving the user unable to recall what the field was asking. The label must always be visible."
+    },
+    {
+      "never": "Build a custom styled dropdown without implementing full keyboard navigation.",
+      "because": "The native select's keyboard behaviour — Up/Down to move, Enter to confirm, Escape to dismiss — is provided by the browser for free. A custom dropdown built from divs loses all of that and must reimplement it correctly, including aria-expanded, aria-haspopup, aria-activedescendant, and focus management. If that work is not done, the component is inaccessible."
+    },
+    {
+      "never": "Set raw colour or spacing values on the select.",
+      "because": "Unbound values are invisible to the design system and to an agent reading it. Always bind to a token."
+    }
+  ],
+  "accessibility": {
+    "role": "combobox (native <select> element)",
+    "keyboard": [
+      "Tab moves focus into the field",
+      "Up and Down arrows move between options when open",
+      "Enter or Space opens the list and confirms a selection",
+      "Escape closes the list without changing the selection"
+    ],
+    "focus": "Native focus order. Visible 2px focus ring on :focus-visible using the focus-ring token, offset by 2px. Focus ring colour shifts to error token when in error state.",
+    "aria": [
+      "aria-invalid=\"true\" when in error state",
+      "aria-describedby points to the error message element when errorMessage is set",
+      "label is always associated via htmlFor/id — never use aria-label as a substitute for a visible label"
+    ],
+    "contrast": "Error red on white meets WCAG AA 4.5:1. Disabled text on disabled surface meets WCAG AA 4.5:1 for the default token set."
+  },
+  "content": {
+    "examples": [
+      "Country",
+      "Language",
+      "Time zone",
+      "Department",
+      "Choose a country",
+      "Select a language",
+      "Please select an option."
+    ]
+  },
+  "codeConnect": {
+    "implementation": "./Select.tsx",
+    "propMap": {
+      "label": "label",
+      "options": "options",
+      "placeholder": "placeholder",
+      "errorMessage": "errorMessage",
+      "disabled": "disabled"
+    }
+  },
+  "agentNotes": "When generating a form field for a bounded list of values — countries, languages, time zones, roles — reach for Select. When the list has four or fewer items and space permits, prefer radio buttons to keep choices visible. Never generate a Select without a label. If a placeholder is used, it should name the category being chosen, not repeat the label ('Choose a country', not 'Country')."
+}

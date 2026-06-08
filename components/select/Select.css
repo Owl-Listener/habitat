@@ -1,0 +1,82 @@
+/* Every value is a token reference. No raw colours, spacing, or radii. */
+
+.habitat-select-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.habitat-select__label {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  font-weight: var(--type-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.habitat-select__wrapper {
+  position: relative;
+}
+
+.habitat-select {
+  font-family: var(--type-family);
+  font-size: var(--type-size-md);
+  color: var(--color-text-default);
+  background-color: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-xl) var(--space-sm) var(--space-md);
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color var(--motion-fast) ease;
+}
+
+.habitat-select:focus {
+  outline: none;
+}
+
+.habitat-select:focus-visible {
+  border-color: var(--color-state-focus-ring);
+  outline: 2px solid var(--color-state-focus-ring);
+  outline-offset: 2px;
+}
+
+.habitat-select:disabled {
+  background-color: var(--color-state-disabled-surface);
+  color: var(--color-state-disabled-text);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+}
+
+.habitat-select--error {
+  border-color: var(--color-state-error);
+}
+
+.habitat-select--error:focus-visible {
+  outline-color: var(--color-state-error);
+}
+
+.habitat-select__error {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  color: var(--color-state-error);
+}
+
+/* Custom chevron — replaces the browser's native arrow */
+.habitat-select__chevron {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-muted);
+  pointer-events: none;
+}
+
+.habitat-select:disabled ~ .habitat-select__chevron {
+  border-top-color: var(--color-state-disabled-text);
+}
