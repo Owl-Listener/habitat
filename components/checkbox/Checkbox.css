@@ -1,0 +1,109 @@
+/* Every value is a token reference. No raw colours, spacing, or radii. */
+
+.habitat-checkbox-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.habitat-checkbox__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--type-family);
+  font-size: var(--type-size-md);
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.habitat-checkbox__label--disabled {
+  color: var(--color-state-disabled-text);
+  cursor: not-allowed;
+}
+
+/* Hide the browser's default checkbox */
+.habitat-checkbox {
+  appearance: none;
+  width: 1.125em;
+  height: 1.125em;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-default);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease;
+}
+
+/* Checked */
+.habitat-checkbox:checked {
+  background-color: var(--color-brand-default);
+  border-color: var(--color-brand-default);
+}
+
+/* Tick mark via clip-path */
+.habitat-checkbox:checked::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-text-on-brand);
+  clip-path: polygon(20% 45%, 10% 55%, 38% 80%, 90% 20%, 80% 10%, 38% 60%);
+}
+
+/* Indeterminate — dash mark */
+.habitat-checkbox:indeterminate {
+  background-color: var(--color-brand-default);
+  border-color: var(--color-brand-default);
+}
+
+.habitat-checkbox:indeterminate::after {
+  content: "";
+  display: block;
+  width: 50%;
+  height: 2px;
+  background-color: var(--color-text-on-brand);
+  margin: auto;
+  position: relative;
+  top: calc(50% - 1px);
+}
+
+/* Focus */
+.habitat-checkbox:focus {
+  outline: none;
+}
+
+.habitat-checkbox:focus-visible {
+  outline: 2px solid var(--color-state-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Disabled */
+.habitat-checkbox:disabled {
+  background-color: var(--color-state-disabled-surface);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+}
+
+.habitat-checkbox:disabled:checked,
+.habitat-checkbox:disabled:indeterminate {
+  background-color: var(--color-state-disabled-surface);
+  border-color: var(--color-border-default);
+}
+
+.habitat-checkbox:disabled:checked::after,
+.habitat-checkbox:disabled:indeterminate::after {
+  background-color: var(--color-state-disabled-text);
+}
+
+/* Error */
+.habitat-checkbox--error {
+  border-color: var(--color-state-error);
+}
+
+.habitat-checkbox__error {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  color: var(--color-state-error);
+  padding-left: calc(1.125em + var(--space-sm));
+}

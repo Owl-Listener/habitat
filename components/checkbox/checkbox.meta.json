@@ -1,0 +1,144 @@
+{
+  "name": {
+    "canonical": "Checkbox",
+    "aliases": ["check", "tick box", "multi-select option"]
+  },
+  "purpose": "Lets a user toggle a boolean choice or select one or more items from a list. The selection is held until the user submits or confirms — it does not trigger an immediate action. For a setting that takes effect instantly, use a Toggle instead.",
+  "props": [
+    {
+      "name": "label",
+      "type": "string",
+      "required": true,
+      "description": "The visible label beside the checkbox. Always required — a checkbox without a label is inaccessible."
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "The checked state. Pass this to control the checkbox from outside."
+    },
+    {
+      "name": "indeterminate",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Shows a dash instead of a tick. Means some but not all items in a related group are checked. Set only on a parent checkbox in a nested list — never as a default or loading state."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Disables the checkbox. Prefer hiding it or explaining why it is unavailable."
+    },
+    {
+      "name": "errorMessage",
+      "type": "string",
+      "required": false,
+      "description": "When set, puts the checkbox into an error state and shows this message below. Use when the checkbox is required and unchecked on submit, e.g. terms and conditions."
+    }
+  ],
+  "variants": [
+    {
+      "name": "default",
+      "whenToUse": "Any time the user needs to make a boolean choice or select items from a list. The choice is applied later, on form submit."
+    },
+    {
+      "name": "indeterminate",
+      "whenToUse": "Only on a parent checkbox that controls a group of child checkboxes, when some but not all children are checked. Never use as a default, placeholder, or loading state."
+    },
+    {
+      "name": "error",
+      "whenToUse": "When the checkbox is required and the user has submitted without checking it. Always pair with an errorMessage explaining what is needed."
+    }
+  ],
+  "states": [
+    { "name": "unchecked", "description": "Resting state. Empty box with strong border." },
+    { "name": "checked", "description": "Box filled with brand colour, white tick mark." },
+    { "name": "indeterminate", "description": "Box filled with brand colour, white dash. Represents partial selection in a group." },
+    { "name": "focus", "description": "Keyboard focus. Visible 2px focus ring using the focus-ring token." },
+    { "name": "disabled", "description": "Non-interactive. Box uses disabled surface and border tokens. Tick and dash use disabled text token." },
+    { "name": "error", "description": "Required checkbox left unchecked. Border uses error token, message shown below." }
+  ],
+  "tokens": {
+    "background.unchecked": "color.surface.default",
+    "background.checked": "color.brand.default",
+    "background.disabled": "color.state.disabledSurface",
+    "border.unchecked": "color.border.strong",
+    "border.checked": "color.brand.default",
+    "border.disabled": "color.border.default",
+    "border.error": "color.state.error",
+    "mark.color": "color.text.onBrand",
+    "mark.disabled": "color.state.disabledText",
+    "label.text": "color.text.default",
+    "label.disabled": "color.state.disabledText",
+    "error.text": "color.state.error",
+    "focus.ring": "color.state.focusRing",
+    "radius": "radius.sm",
+    "gap": "space.sm",
+    "font": "type.family",
+    "fontSize": "type.size.md",
+    "errorSize": "type.size.sm",
+    "transition": "motion.fast"
+  },
+  "relationships": {
+    "belongsIn": ["Form", "FilterPanel", "SettingsPanel", "CheckboxGroup"],
+    "contains": ["checkbox input", "label text", "optional error message"],
+    "pairsWith": ["Button", "CheckboxGroup", "Input", "Select"]
+  },
+  "antiPatterns": [
+    {
+      "never": "Use indeterminate as a default, loading, or 'not yet decided' state.",
+      "because": "Indeterminate has one specific meaning: some but not all children in a controlled group are checked. Using it outside that context misrepresents the state to the user and to assistive technology."
+    },
+    {
+      "never": "Use a Checkbox for a setting that takes immediate effect.",
+      "because": "A checkbox communicates a deferred choice — the selection is applied when the user submits or confirms. A setting that changes something instantly belongs in a Toggle, which communicates immediacy."
+    },
+    {
+      "never": "Use a Checkbox when only one option can be selected from a group.",
+      "because": "Mutual exclusivity is what radio buttons communicate. A group of checkboxes implies multiple selections are valid. Using checkboxes for a single-answer question sets the wrong expectation."
+    },
+    {
+      "never": "Omit an errorMessage when a required checkbox is left unchecked.",
+      "because": "A silent validation failure — the form won't submit but nothing explains why — is a dead end. The error message must say what is required and why."
+    }
+  ],
+  "accessibility": {
+    "role": "checkbox (native <input type='checkbox'> element)",
+    "keyboard": [
+      "Tab moves focus to the checkbox",
+      "Space toggles the checked state"
+    ],
+    "focus": "Visible 2px focus ring on :focus-visible using the focus-ring token, offset by 2px.",
+    "aria": [
+      "aria-invalid=\"true\" when in error state",
+      "aria-describedby points to the error message element when errorMessage is set",
+      "indeterminate state is set via the DOM property element.indeterminate — there is no HTML attribute equivalent",
+      "label is always associated via htmlFor/id and by wrapping — never rely on visual proximity alone"
+    ],
+    "contrast": "Brand fill on white border meets WCAG AA 3:1 for UI components. Error red on white meets WCAG AA 4.5:1. Disabled mark on disabled surface meets WCAG AA 4.5:1."
+  },
+  "content": {
+    "examples": [
+      "I agree to the terms and conditions",
+      "Send me product updates",
+      "Remember me on this device",
+      "Select all",
+      "In stock only",
+      "You must accept the terms to continue."
+    ]
+  },
+  "codeConnect": {
+    "implementation": "./Checkbox.tsx",
+    "propMap": {
+      "label": "label",
+      "checked": "checked",
+      "indeterminate": "indeterminate",
+      "disabled": "disabled",
+      "errorMessage": "errorMessage"
+    }
+  },
+  "agentNotes": "Use Checkbox for deferred boolean choices — terms, preferences, multi-select filters. Use Toggle for instant-effect settings. Use Radio for mutually exclusive options. When building a 'select all' pattern, set indeterminate on the parent only when some children are checked; set it to checked when all are checked and unchecked when none are. Never use indeterminate as a third value for a standalone checkbox."
+}
