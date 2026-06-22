@@ -1,0 +1,98 @@
+/* Every value is a token reference. No raw colours, spacing, or radii. */
+
+.habitat-radio__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--type-family);
+  font-size: var(--type-size-md);
+  color: var(--color-text-default);
+  cursor: pointer;
+}
+
+.habitat-radio__label--disabled {
+  color: var(--color-state-disabled-text);
+  cursor: not-allowed;
+}
+
+/* Hide the browser's default radio */
+.habitat-radio {
+  appearance: none;
+  width: 1.125em;
+  height: 1.125em;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 999px;
+  background-color: var(--color-surface-default);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease;
+}
+
+/* Selected — outer ring + inner dot */
+.habitat-radio:checked {
+  border-color: var(--color-brand-default);
+  background-color: var(--color-surface-default);
+}
+
+.habitat-radio:checked::after {
+  content: "";
+  display: block;
+  width: 40%;
+  height: 40%;
+  border-radius: 999px;
+  background-color: var(--color-brand-default);
+  margin: auto;
+  position: relative;
+  top: calc(30% - 0.5px);
+}
+
+/* Focus */
+.habitat-radio:focus {
+  outline: none;
+}
+
+.habitat-radio:focus-visible {
+  outline: 2px solid var(--color-state-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Disabled */
+.habitat-radio:disabled {
+  background-color: var(--color-state-disabled-surface);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+}
+
+.habitat-radio:disabled:checked::after {
+  background-color: var(--color-state-disabled-text);
+}
+
+/* RadioGroup */
+.habitat-radio-group {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.habitat-radio-group__legend {
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  font-weight: var(--type-weight-medium);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.habitat-radio-group__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.habitat-radio-group__error {
+  display: block;
+  font-family: var(--type-family);
+  font-size: var(--type-size-sm);
+  color: var(--color-state-error);
+  margin-top: var(--space-xs);
+}
