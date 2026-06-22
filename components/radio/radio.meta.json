@@ -1,0 +1,153 @@
+{
+  "name": {
+    "canonical": "RadioGroup",
+    "aliases": ["radio", "radio buttons", "radio group", "option group"]
+  },
+  "purpose": "Lets a user choose exactly one option from a small, fixed list where all options should be visible at once. Use when choices are mutually exclusive and there are between two and five options. For six or more options, use Select. For choices that are not mutually exclusive, use Checkbox.",
+  "props": [
+    {
+      "name": "legend",
+      "type": "string",
+      "required": true,
+      "description": "Labels the whole group. Rendered as a <legend> inside a <fieldset> so screen readers announce it before each option."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "description": "Ties all Radio inputs in the group together. Must be unique within the form. This is what enforces mutual exclusivity in HTML."
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "required": false,
+      "description": "The currently selected value. Pass this to control the group from outside."
+    },
+    {
+      "name": "onChange",
+      "type": "(value: string) => void",
+      "required": false,
+      "description": "Called with the new value when the user selects a different option."
+    },
+    {
+      "name": "errorMessage",
+      "type": "string",
+      "required": false,
+      "description": "When set, puts the group into an error state and shows this message below all options."
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Disables every Radio in the group. The HTML disabled attribute on a fieldset disables all its children automatically."
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "required": true,
+      "description": "The Radio components. Each Radio needs a label and a value."
+    }
+  ],
+  "variants": [
+    {
+      "name": "default",
+      "whenToUse": "Any time the user must pick exactly one option from two to five choices that should all be visible without interaction."
+    },
+    {
+      "name": "error",
+      "whenToUse": "When the user has submitted without making a selection and a choice is required. Always pair with an errorMessage explaining what is needed."
+    }
+  ],
+  "states": [
+    { "name": "unchecked", "description": "Resting state. Empty circle with strong border." },
+    { "name": "checked", "description": "Brand-coloured outer ring with filled inner dot." },
+    { "name": "focus", "description": "Keyboard focus on the active option. Visible 2px focus ring using the focus-ring token." },
+    { "name": "disabled", "description": "Non-interactive. Circle uses disabled surface and border tokens. Inner dot uses disabled text token." },
+    { "name": "error", "description": "No selection made when one is required. Error message shown below the group." }
+  ],
+  "tokens": {
+    "background.unchecked": "color.surface.default",
+    "background.disabled": "color.state.disabledSurface",
+    "border.unchecked": "color.border.strong",
+    "border.checked": "color.brand.default",
+    "border.disabled": "color.border.default",
+    "dot.color": "color.brand.default",
+    "dot.disabled": "color.state.disabledText",
+    "legend.text": "color.text.muted",
+    "label.text": "color.text.default",
+    "label.disabled": "color.state.disabledText",
+    "error.text": "color.state.error",
+    "focus.ring": "color.state.focusRing",
+    "gap": "space.sm",
+    "font": "type.family",
+    "fontSize": "type.size.md",
+    "legendSize": "type.size.sm",
+    "errorSize": "type.size.sm",
+    "transition": "motion.fast"
+  },
+  "relationships": {
+    "belongsIn": ["Form", "FilterPanel", "SettingsPanel", "Dialog"],
+    "contains": ["fieldset", "legend", "Radio options", "optional error message"],
+    "pairsWith": ["Button", "Checkbox", "Select"]
+  },
+  "antiPatterns": [
+    {
+      "never": "Use RadioGroup for more than five options.",
+      "because": "A long list of visible radio buttons clutters the layout and makes scanning hard. Select hides the options behind a click but is the right trade-off once the list grows beyond five items."
+    },
+    {
+      "never": "Use RadioGroup for choices that are not mutually exclusive.",
+      "because": "Radio buttons communicate that selecting one deselects all others. If the user should be able to pick more than one, use Checkboxes instead."
+    },
+    {
+      "never": "Render a Radio outside a RadioGroup.",
+      "because": "A lone Radio has no name attribute and is not connected to any group. It will not deselect other options and its value will not be submitted correctly. Radio only makes sense as part of a group."
+    },
+    {
+      "never": "Use RadioGroup for a binary yes/no when a single Checkbox would do.",
+      "because": "Two radios labelled Yes and No is a common pattern but usually wrong. A single checkbox communicates the same thing with less visual weight and one fewer element."
+    }
+  ],
+  "accessibility": {
+    "role": "radiogroup (native <fieldset> with role inferred from context)",
+    "keyboard": [
+      "Tab moves focus into the group, landing on the selected option or the first option if none selected",
+      "Arrow keys (Up/Down or Left/Right) move between options within the group",
+      "Tab moves focus out of the group entirely — arrow keys handle in-group navigation",
+      "Space selects the focused option"
+    ],
+    "focus": "Visible 2px focus ring on :focus-visible using the focus-ring token, offset by 2px. Only the active option in the group is in the tab order at any time.",
+    "aria": [
+      "fieldset and legend provide the group label — no aria-labelledby needed when this structure is used",
+      "aria-describedby on the fieldset points to the error message when errorMessage is set",
+      "Each Radio is a native <input type='radio'> — no ARIA role needed"
+    ],
+    "contrast": "Brand dot on white meets WCAG AA 3:1 for UI components. Disabled dot on disabled surface meets WCAG AA 4.5:1."
+  },
+  "content": {
+    "examples": [
+      "Payment method",
+      "Delivery speed",
+      "Account type",
+      "Credit card",
+      "Bank transfer",
+      "Standard (3–5 days)",
+      "Express (next day)",
+      "Please select an option."
+    ]
+  },
+  "codeConnect": {
+    "implementation": "./RadioGroup.tsx",
+    "propMap": {
+      "legend": "legend",
+      "name": "name",
+      "value": "value",
+      "onChange": "onChange",
+      "errorMessage": "errorMessage",
+      "disabled": "disabled",
+      "children": "children"
+    }
+  },
+  "agentNotes": "Always use RadioGroup, never a bare Radio. The group owns the name, the legend, and the error message. The decision rule: 2–5 mutually exclusive options → RadioGroup; 6+ options → Select; non-exclusive options → Checkbox; a single boolean → Checkbox. The keyboard pattern for radio groups is different from all other controls: arrow keys navigate between options, Tab exits the group. Do not instruct the user to Tab between radio options."
+}
