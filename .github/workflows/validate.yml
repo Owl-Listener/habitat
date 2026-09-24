@@ -1,4 +1,4 @@
-name: Validate component contracts
+name: Validate
 
 on:
   push:
@@ -15,7 +15,13 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm install
+      - run: npm ci
 
-      - name: Validate every component contract against the schema
+      - name: The worked example is complete and valid
         run: npm run validate
+
+      - name: The example code passes its own design system's checks
+        run: npm run check
+
+      - name: Tests (init, validate, check, parity, MCP server)
+        run: npm test

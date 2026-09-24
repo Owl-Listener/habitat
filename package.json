@@ -1,12 +1,34 @@
 {
   "name": "habitat",
-  "version": "0.1.0",
-  "description": "A design system built to be read by agents.",
-  "private": true,
-  "scripts": {
-    "validate": "ajv validate -s schema/component.schema.json -d 'components/**/*.meta.json' --spec=draft7"
+  "version": "0.2.0",
+  "description": "Make your own design system legible to AI agents: templates, a guided Figma + AI extraction, a validator, and an MCP server.",
+  "type": "module",
+  "bin": {
+    "habitat": "bin/habitat.js"
   },
-  "devDependencies": {
-    "ajv-cli": "^5.0.0"
+  "files": [
+    "bin",
+    "lib",
+    "mcp-server",
+    "schema",
+    "skills",
+    "templates",
+    "prompts"
+  ],
+  "scripts": {
+    "validate": "node bin/habitat.js validate examples/design --strict",
+    "serve": "node bin/habitat.js serve examples/design",
+    "test": "node --test test/habitat.test.js",
+    "check": "node bin/habitat.js check examples/code --design examples/design"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "ajv": "^8.17.1",
+    "gray-matter": "^4.0.3",
+    "zod": "^3.23.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

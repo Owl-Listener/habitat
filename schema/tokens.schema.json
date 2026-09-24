@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Owl-Listener/habitat/schema/tokens.schema.json",
+  "title": "habitat tokens file",
+  "description": "The YAML front matter of tokens.md. Names, values, tiers and aliases usually come straight from Figma variables; meaning, useFor and avoid come from the designer, because a hex code does not say when to use it.",
+  "type": "object",
+  "required": ["kind", "status", "tokens"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "tokens" },
+    "status": { "enum": ["draft", "reviewed"] },
+    "owner": { "type": "string", "description": "Who approves changes to the tokens." },
+    "lastReviewed": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "When a person last checked this file against Figma (YYYY-MM-DD)." },
+    "figma": {
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "collections": { "type": "array", "items": { "type": "string" }, "description": "The Figma variable collections these tokens were read from." }
+      }
+    },
+    "tokens": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "meaning"],
+        "anyOf": [{ "required": ["value"] }, { "required": ["aliasOf"] }],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "Dot-separated token name, e.g. 'color.brand.default'." },
+          "tier": {
+            "enum": ["primitive", "semantic", "component"],
+            "description": "primitive: a raw palette value with no meaning of its own (color.teal.600). semantic: a role (color.brand.default), which is what components should bind to. component: a value specific to one component (button.primary.background)."
+          },
+          "value": { "type": ["string", "number"], "description": "The raw value, e.g. '#1f6f6b' or '16px'. For modes (light/dark), use 'modes' instead and put the default here." },
+          "aliasOf": { "type": "string", "description": "The token this one points to, e.g. a semantic colour pointing at a primitive. Must exist in this file." },
+          "modes": { "type": "object", "additionalProperties": { "type": ["string", "number"] }, "description": "Optional per-mode values, e.g. { light: '#fff', dark: '#111' }." },
+          "meaning": { "type": "string", "description": "What this token is for, in a sentence." },
+          "useFor": { "type": "string", "description": "Where to reach for it." },
+          "avoid": { "type": "string", "description": "Where not to use it, and why." },
+          "replacedBy": { "type": "string", "description": "Marks the token as deprecated; names the token to use instead." }
+        }
+      }
+    }
+  }
+}

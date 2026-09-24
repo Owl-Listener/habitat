@@ -1,81 +1,246 @@
 # habitat
 
-**A design system built to be read by agents, not just by people.**
+**Your design system is invisible to AI. habitat helps you change that.**
 
-Most design systems are written for humans. A designer or developer opens the docs, reads them, interprets them, and applies judgment. An AI agent gets none of that. It reads your components and tokens literally, and where the meaning is missing, it guesses. The guesses compound, and the interface it builds comes out generic, or wrong.
+Ask a coding agent to build a screen with your design system and watch what happens. It invents components you already have. It hard-codes colours. It puts two primary buttons side by side, because nothing told it why you never would. The agent is capable. It just can't see the years of decisions that live in your team's heads.
 
-habitat is the other side of [agent-ready](https://github.com/Owl-Listener/agent-ready). agent-ready tells you how legible your design files are to an agent and scores the gaps. habitat is a small, opinionated reference for what a system looks like when it scores full marks, so you have something real to fork instead of a checklist to chase.
+habitat is a kit for writing those decisions down, in a form an agent can read, and then checking that it worked. You keep your own design system; habitat helps you make it legible. You bring your Figma library and your AI, and together they draw the reasoning out of you, a few questions at a time.
 
-It ships three things that usually live apart, kept deliberately together:
-
-- **Components and tokens**, the ordinary material of a design system.
-- **A machine-readable contract** on every component, recording purpose, props, states, relationships, and the things an agent must never do.
-- **An MCP server** that serves all of it to a coding agent on demand, so the agent reads the system instead of guessing at it.
-
-By MC Dean · [Percolates on Substack](https://marieclairedean.substack.com) · MIT licensed.
+By MC Dean · [MC Percolates on Substack](https://marieclairedean.substack.com) · MIT licensed
 
 ---
 
-## The idea in one paragraph
+## How does it work?
 
-A component is not agent-ready because it exists. It is agent-ready when an agent can tell what it is for, when to reach for it, what state it should be in, which tokens it must use, and what it should refuse to do. habitat treats that knowledge as part of the component, written down in a form a machine can hold, and validates it against a schema. The same button means the same thing in the docs, in the code, and in Claude.
+Figma already knows what your system is made of: components, variants, properties, layout, variables. What it can't hold is why. When to pick one variant over another, the mistakes you've watched people make, what your brand colour is allowed to mean. That judgement is exactly what an agent needs.
 
-## What's in here
+So habitat splits the work in two. **The AI reads the facts from Figma. You supply the reasons.** It interviews you for them, and it never makes one up. Anything it doesn't know stays marked `TODO`, and anything it guesses stays marked `TODO confirm:` until you agree.
+
+Then it tests the result. The method comes from Buzz Usborne's work at Help Scout, described in [Designing with AI](https://buzzusborne.com/work/designing-with-ai/). Ask an AI to build a real screen with no context, look at what it gets wrong, write down the missing rule, and run it again. Each pass exposes another piece of judgement the system needs, and the drop in problems tells you what your documentation is worth.
+
+## What you'll need
+
+- **Node.js 20 or later.** The `habitat` command runs on it. Check with `node --version`, and install it from [nodejs.org](https://nodejs.org) if you need to.
+- **An AI tool.** Claude Code gets the guided skills. Anything else (ChatGPT, Gemini, Cursor) can use the copy-paste prompts.
+- **Your Figma library, connected to your AI** through the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server). No connection? Screenshots and a variables export work too, just more slowly.
+
+You don't need to install habitat itself. Every command below runs it straight from GitHub with `npx`.
+
+## Quick start
+
+In your project folder:
+
+```bash
+npx github:Owl-Listener/habitat init
+```
+
+Then, in Claude Code:
+
+```
+/habitat-extract
+```
+
+Give it your Figma file link, and it takes you through everything else. Using a different AI? Open the [prompts](prompts) and paste them in order.
+
+## A walkthrough
+
+Here's what it looks like for Sam, a design lead with a Figma library and a React codebase.
+
+### 1. Set up (five minutes)
+
+Sam runs `npx github:Owl-Listener/habitat init` in the project folder. That creates a `design/` folder with the templates, installs three Claude Code skills, and adds a short block of always-on rules to `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`. Claude Code, Cursor and other agents that support these files read them before every task. They say: read the design system first, never hard-code values, and if something's missing, say so instead of inventing a lookalike.
+
+It never overwrites anything. Run it twice and nothing changes.
+
+### 2. See the problem (half an hour)
+
+Sam runs `/habitat-extract` and pastes the Figma link. The first thing it asks is which two or three user journeys matter most, say "send an invoice". Then it builds that screen with no documentation at all, and asks Sam what's wrong with it.
+
+Sam finds eight problems. Two primary buttons, a hand-built date picker, hard-coded colours, "Oops!" in the error message... That list is the baseline, and it's also the to-do list.
+
+### 3. Write it down (an afternoon to a few days)
+
+The AI reads what it can from Figma: tokens, components, variants, states, layers, auto layout. Then it interviews Sam for what Figma can't hold.
+
+- How do you decide between primary and secondary?
+- What's the most common mistake people make with this?
+- Why is that a problem?
+
+Sam's answers go into the files in Sam's own words, with Sam's name and the date on each rule, so anyone can trace a rule back to a decision.
+
+### 4. Prove it worked
+
+The AI runs the same prompt again, this time with the files. Sam says what's still wrong, and each correction becomes a new rule. When the AI writes code, `habitat check` gives a number anyone can repeat:
+
+```bash
+npx github:Owl-Listener/habitat check src/screens --design design
+```
+
+Eight problems down to one is the evidence. Sam stops when the corrections feel like matters of taste rather than rules.
+
+### 5. Bring in the research (optional, and worth it)
+
+Rules tell an agent what to do in the cases someone foresaw. Research tells it why, and that's what lets it make a good call when nothing in the files covers the case. An agent that knows "our users do their bookkeeping at the end of a tiring day, and abandon anything that feels risky with money" will reach for undo over a confirmation dialog on a screen nobody wrote a rule for.
+
+Sam runs `/habitat-research` and hands it whatever the team has: reports, interview notes, a research repository export, survey results, support tickets. It can live anywhere. The AI distils it into short findings, one per file, each with its evidence and an honest confidence rating (strong, emerging or hunch), and a researcher confirms every one. Then it links each finding to the rules it supports, and shows Sam which rules rest on nothing, and which findings have no rule yet.
+
+Two things it's careful about. It never copies transcripts or personal data into the files, because they're committed to a repository and read by AI tools; it distils, anonymises and links to the source instead. And it keeps hunches labelled as hunches, so an agent doesn't treat one vivid quote as law.
+
+If the team keeps evidence-based descriptions of who it serves, those can go in too, as situations rather than invented personas. If not, the findings work on their own.
+
+### 6. Switch it on for the team
+
+```bash
+claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design
+```
+
+Now, when anyone asks an agent to build UI, it reads the principles, looks up the right components and what the team knows about the people it's building for, checks its own code before handing it over, and says "there's no date picker in the system" instead of quietly building one.
+
+### 7. Keep it true
+
+A design system keeps growing, and documentation that no longer matches it is worse for an agent than none, because the agent follows it with confidence.
+
+- **`/habitat-review`** critiques any screen, Figma frame or pull request against the team's rules, and names the rule behind every problem. Anything no rule covers comes back as a proposed new rule, so every review makes the system a little smarter.
+- **`/habitat-refresh`** re-reads Figma when the library changes. It updates the facts, never touches the reasons, and hands Sam a short list of the decisions only a person can make.
+- **`habitat parity`** shows where the documentation and the code disagree.
+- **`habitat validate`** flags any file nobody has reviewed in six months, research that's more than a year old, and rules that still cite findings newer research has replaced.
+
+### Or start smaller
+
+Not ready for all of that? Fill in `design/DESIGN.md` on its own (your product, your core journeys, your principles and how forms, errors and dialogs should behave) and run a few rounds of steps 2 and 4. It's an afternoon's work, and it gets you AI output that is recognisably yours before you've documented a single component. Add component files later, for whatever keeps going wrong.
+
+## Your checklist
+
+The walkthrough above, as a list you can work through on your own design system. Each task says how you'll know it's done. The optional ones can wait, and nothing breaks without them.
+
+### Before you start (about half an hour)
+
+- [ ] **Install Node.js 20 or later.** Done when `node --version` shows v20 or higher.
+- [ ] **Connect the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server) to Claude Code.** Done when Claude can read your library file from its link.
+- [ ] **Optional: score your Figma file with [agent-ready](https://github.com/Owl-Listener/agent-ready)** and fix the worst of it first, such as detached instances, hard-coded colours or missing auto layout. Done when the biggest gaps are closed, or you've decided to live with them for now.
+
+### Set up (five minutes)
+
+- [ ] **Run `npx github:Owl-Listener/habitat init`** in your project folder. Done when you have a `design/` folder, four skills in `.claude/skills/`, and the habitat rules in `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`.
+
+### See the problem first (about half an hour)
+
+- [ ] **Run `/habitat-extract`** and paste your Figma library link.
+- [ ] **Name the two or three journeys that matter most**, such as "send an invoice".
+- [ ] **Run the baseline.** Claude builds the first journey with no documentation, and you list everything wrong with it. Done when there's a baseline file in `design/evals/` with a problem count. That list is your to-do list.
+
+### Write it down (an afternoon to a few days)
+
+- [ ] **Tokens.** Claude reads your variables and sorts them into primitive, semantic and component tiers; you explain the ambiguous ones, and where brand and status colours may and may not go. Done when every semantic token in `tokens.md` has a meaning.
+- [ ] **Components, one at a time**, starting with the ones your journeys use. Claude reads the variants, properties, states, layers and auto layout; you say what each is for, how to choose between variants, what people get wrong and why, who owns it, and whether it's being retired. Done when each has a file with at least two never … because … rules.
+- [ ] **Principles and interaction rules.** An interview about your product and its users, what your brand colour means, and how forms, errors, dialogs, loading and destructive actions behave. Done when `DESIGN.md` has no big gaps.
+- [ ] **Optional, and worth it: bring in your research** with `/habitat-research`. Hand over whatever you have; a researcher confirms each finding, then Claude links findings to rules. Done when your key rules cite evidence, and you've seen which ones rest on nothing.
+- [ ] **Optional: link components to code.** Add where each lives in your codebase, then run `npx github:Owl-Listener/habitat parity design --code src/components`. Done when nothing is missing from code, and you know which code components have no documentation yet.
+
+### Prove it worked (an hour or two, more than once)
+
+- [ ] **Run the baseline prompt again**, word for word, with the files in place. Each problem you still see becomes a new rule.
+- [ ] **Count the problems.** If Claude wrote code, `npx github:Owl-Listener/habitat check <files> --design design` gives a number anyone can repeat. Log each run in `design/evals/`.
+- [ ] **Repeat until your corrections are about taste rather than rules**, then move on to the next journey. Done when the count has dropped clearly from your baseline.
+
+### Finish and switch it on (about half an hour)
+
+- [ ] **Run `npx github:Owl-Listener/habitat validate design`** and clear the errors.
+- [ ] **Answer the remaining TODOs**, or leave the ones you choose to, and set `status: reviewed` and `lastReviewed` on each file you've checked.
+- [ ] **Connect it to Claude Code:** `claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design`
+- [ ] **Commit `design/` and the rules files**, so your whole team and their agents get them. Done when a teammate asks Claude for a screen and it builds from your system, or tells them what's missing instead of inventing it.
+
+### Keep it true (as you go)
+
+- [ ] **When Figma changes**, run `/habitat-refresh` and answer the decisions it lists.
+- [ ] **When you review a screen or pull request**, run `/habitat-review`, and adopt the proposed rules you agree with.
+- [ ] **When new research lands**, add it with `/habitat-research`, and retire the findings it replaces.
+- [ ] **Every so often**, run `validate` to catch files nobody has reviewed in six months and research more than a year old. You can also add `validate --strict` and `check` to your CI.
+
+### If you only have an afternoon
+
+Install Node, connect Figma, run `init`, do the baseline, write `DESIGN.md`, run the baseline again, and connect it to Claude Code. That's enough to get output that is recognisably yours, and to see for yourself whether the rest is worth doing.
+
+## What you end up with
+
+```
+your-project/
+├── design/
+│   ├── DESIGN.md          your principles, core journeys and interaction rules
+│   ├── tokens.md          every token, its tier, and what it means
+│   ├── components/
+│   │   └── button.md      one file per component: a contract, then your notes
+│   ├── research/          optional: what you know about your users
+│   │   ├── insights/      one finding per file, with its evidence and confidence
+│   │   └── people/        optional: the kinds of people you serve
+│   └── evals/             each test run: what the AI got wrong, and what fixed it
+├── AGENTS.md              the always-on rules (added to your existing file)
+├── CLAUDE.md
+└── .cursor/rules/habitat.mdc
+```
+
+Each component file opens with a structured contract: what it's for, when to use each variant, its states, anatomy and layout, which tokens it uses, accessibility, and the things it must never do, each with a because, and the research it rests on where there is some. Your notes go underneath, in plain prose. Have a look at the worked example in [`examples/design`](examples/design) to see a finished set.
+
+## The commands
+
+| Command | What it does |
+| --- | --- |
+| `habitat init [folder]` | Sets up a design folder (`design` by default), the skills and the always-on rules |
+| `habitat validate [folder]` | Checks every file, lists open TODOs, and warns about stale files, missing tokens and broken references. Add `--strict` in CI to fail while any TODO remains |
+| `habitat check <files> --design <folder>` | Checks code for hard-coded colours and sizes, invented tokens, retired components, and native elements where your system has a component, with file and line |
+| `habitat parity [folder] --code <folder>` | Checks each documented component exists in code with the props it promises, and lists code components with no documentation |
+| `habitat serve [folder]` | Serves your design folder to a coding agent over MCP |
+
+Put `npx github:Owl-Listener/habitat` in front of each one. When an agent is connected through `serve`, it gets seven tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, `get_research` for what the team knows about its users, and `check_code` for checking its own work.
+
+## The skills and prompts
+
+| For Claude Code | For any other AI | When |
+| --- | --- | --- |
+| `/habitat-extract` | [prompts 0 to 4](prompts) | Writing your system down for the first time |
+| `/habitat-research` | [research.md](prompts/research.md) | When you have user research to bring in |
+| `/habitat-review` | [review.md](prompts/review.md) | Whenever you want a screen critiqued against your rules |
+| `/habitat-refresh` | [refresh.md](prompts/refresh.md) | When your Figma library changes |
+
+## What habitat can't do for you
+
+I'd rather you knew this upfront.
+
+- **It can't tidy a messy source.** Buzz rebuilt more than 200 components and standardised hundreds of tokens before AI could use his system. habitat tells you what's wrong in Figma; [agent-ready](https://github.com/Owl-Listener/agent-ready) scores the structure and helps you fix it, but the fixing is still your work.
+- **It can't make Figma and code match.** Buzz's biggest finding was that without full parity, AI confidently builds screens that look right from components that don't exist. habitat finds the mismatches. Building the missing components and retiring the stale ones is design and engineering work. Its parity check also reads code as text, so treat what it finds as things to look at, not proof something is wrong.
+- **It can't supply the judgement.** The interview draws out what your team already knows. It won't invent taste you haven't formed yet, and it won't try.
+
+Put together with agent-ready, the whole loop looks like this: fix the structure, write down the judgement, serve it to your agents, check the results, and keep it true as things change.
+
+## What's in this repo
 
 ```
 habitat/
-├── tokens/                  the design tokens, the raw material
-│   ├── tokens.json          source of truth
-│   └── tokens.css           the same values as CSS variables
-├── schema/
-│   └── component.schema.json  the contract every component must satisfy
-├── components/
-│   └── button/              one component, worked end to end, as the pattern to copy
-│       ├── Button.tsx        the implementation
-│       ├── Button.css        styles, bound to tokens, never raw values
-│       ├── button.meta.json  the machine-readable contract
-│       └── README.md         the human-readable note
-├── docs/
-│   └── intent-spec.md       what every field in the contract means, and why
-└── mcp-server/              serves the system to an agent over MCP
-    ├── index.js
-    └── package.json
+├── templates/          the blank files that init copies into your project
+├── skills/             the four Claude Code skills
+├── prompts/            the same processes as copy-paste prompts, for any AI
+├── schema/             what a valid component file and tokens file look like
+├── bin/ and lib/       the habitat command
+├── mcp-server/         serves a design folder to an agent
+├── examples/
+│   ├── design/         a finished design folder for an imaginary product, Ledger
+│   └── code/           the Button and Input it describes, in React
+├── test/               tests for the command and the MCP server
+└── docs/intent-spec.md every field in the contract, why it exists, and where its answer comes from
 ```
-
-## How to use it
-
-1. **Fork it.** Strip the button down to your own primitives, or keep it and add your own components alongside.
-2. **Write the contract as you build.** For each component, fill in `*.meta.json` against `schema/component.schema.json`. The contract is the work, the code is the easy part.
-3. **Serve it to your agent.** Run the MCP server and point Claude Code or Gemini CLI at it. Now when you ask the agent to build, it queries the system rather than inventing one.
-4. **Check yourself with agent-ready.** Run [agent-ready](https://github.com/Owl-Listener/agent-ready) over your work. A habitat-shaped component should score full marks. If it doesn't, the contract has a gap.
-
-## The contract maps to agent-ready's checks
-
-Every field in the contract exists because an agent needs it. The mapping is one to one with the thirteen checks in agent-ready, so the two repos define a single standard from two directions, one that measures, one that demonstrates. See [`docs/intent-spec.md`](docs/intent-spec.md) for the full mapping.
-
-## Run the MCP server
-
-```bash
-cd mcp-server
-npm install
-npm start
-```
-
-Then add it to your agent's MCP configuration as a stdio server pointing at `mcp-server/index.js`. The server exposes four tools: `list_components`, `get_component`, `get_tokens`, and `get_rules`.
-
-## A note on the styling
-
-The button looks plain on purpose. The value of habitat is the contract and the way the system makes itself legible, not the look. Re-theme it through the tokens and make it yours. Taste belongs to you, the structure is what travels.
 
 ## Related
 
-- [agent-ready](https://github.com/Owl-Listener/agent-ready) — scores how agent-ready a design file is, and closes the gaps.
-- [designer-skills](https://github.com/Owl-Listener/designer-skills) — the judgment of a design team, written down as agent skills.
+- [agent-ready](https://github.com/Owl-Listener/agent-ready) scores how legible your Figma file is to an agent. Every field in a habitat contract maps to one of its checks, so the two define the same standard from two directions.
+- [designer-skills](https://github.com/Owl-Listener/designer-skills) is the judgement of a design team, written down as agent skills.
+- [Design System Contracts](https://github.com/southleft/ds-contracts-poc) by Southleft generates matching React and Figma libraries from machine-readable contracts. It captures structure where habitat captures judgement, and the two fit together well. Their with-and-without test is a good model for your own evals, the same model scored 100 with contracts and 69 without.
 
 ## Contributing
 
-Fork it, break it, make it better. If you add a component, ship its contract in the same commit, and run it through `schema/component.schema.json` before you open a PR. A component without its contract is not finished.
+Fork it, break it, make it better. Run `npm install` and then `npm test` before you open a pull request.
 
-## License
+If you try habitat on your own design system, I'd love to hear what your before and after looked like. That's the real test of whether any of this works, so go and run your baseline, then [open an issue](https://github.com/Owl-Listener/habitat/issues) and tell me what you find.
+
+## Licence
 
 MIT.
