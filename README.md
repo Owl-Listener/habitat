@@ -235,6 +235,18 @@ habitat/
 - [designer-skills](https://github.com/Owl-Listener/designer-skills) is the judgement of a design team, written down as agent skills.
 - [Design System Contracts](https://github.com/southleft/ds-contracts-poc) by Southleft generates matching React and Figma libraries from machine-readable contracts. It captures structure where habitat captures judgement, and the two fit together well. Their with-and-without test is a good model for your own evals, the same model scored 100 with contracts and 69 without.
 
+## Further reading
+
+The writing that shaped habitat. Each one is worth your time in full.
+
+- **[Designing with AI](https://buzzusborne.com/work/designing-with-ai/)** by Buzz Usborne. How Help Scout made a mature design system legible to LLMs: articulating how they design as well as what, a design.md built through repeated evals, and full parity between Figma and React. The clearest account I've read of how much work this really is, and why it pays off.
+- **[My 4-step framework to make design systems AI-readable](https://medium.muz.li/my-4-step-framework-to-make-design-systems-ai-readable-74ba07145312)** by The Maker's Lab. Audit a handful of components first, generate specs that include anatomy and layout, start with one component, and measure the difference.
+- **[Designing with AI-Readable Design Systems in Cursor](https://medium.com/design-bootcamp/working-with-ai-readable-design-systems-in-cursor-2bba9c9c09d9)** on Bootcamp. Prompts, rules and instructions as three layers, always-on rules the agent reads before every task, and checkpoints where the AI compares its output with the system.
+- **[Machine-Readable Design Tokens for AI-Ready Component Libraries](https://southleft.com/insights/design-systems/machine-readable-design-tokens-for-ai-ready-component-libraries/)** by Southleft. Primitive, semantic and component tokens, and the case for putting each token's usage rule in its description, because that's the guidance a name can't carry.
+- **[Digital Design Systems as the Foundation for AI-Powered Product Development](https://ibmix.de/en/blog/design-systems-and-ai)** by IBM iX. The organisational view: governance, versioning and deprecation, interaction and validation rules for agents, a traceable why behind every pattern, and measuring impact rather than activity.
+
+Thank you to everyone writing openly about this while it's still being worked out. If you've written something that belongs here, [open an issue](https://github.com/Owl-Listener/habitat/issues) and tell me about it.
+
 ## Contributing
 
 Fork it, break it, make it better. Run `npm install` and then `npm test` before you open a pull request.
