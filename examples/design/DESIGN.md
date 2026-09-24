@@ -14,12 +14,14 @@ Ledger is a bookkeeping tool for people who run small businesses and are not acc
 
 ## Principles
 
+<!-- The ids in brackets are research insights in research/insights/, the evidence behind each rule. -->
+
 ### One thing at a time
 
 Every screen has one job and one primary action.
 
 - **In practice:** A single primary Button per view. Secondary actions are secondary or ghost Buttons, or live in a menu.
-- **Because:** Our users arrive tired and with one chore in mind. When two things compete, they stall, and a stalled bookkeeping task becomes a late one.
+- **Because:** Our users arrive tired and with one chore in mind. When two things compete, they stall, and a stalled bookkeeping task becomes a late one (INS-001, INS-002).
 
 ### Calm over clever
 
@@ -33,7 +35,7 @@ Plain layouts, plain words, no surprises.
 Every outcome is explained in words next to where it happened.
 
 - **In practice:** Errors appear inline under the field that caused them, and say how to fix it. Success is confirmed where the user is looking, not in a corner.
-- **Because:** Our users are not experts. A red border alone tells them something is wrong but not what, and they will give up rather than guess.
+- **Because:** Our users are not experts. A red border alone tells them something is wrong but not what, and they will give up rather than guess. Errors that arrive too early read as blame (INS-003).
 
 ## Colour
 

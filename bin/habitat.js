@@ -31,7 +31,7 @@ for (let i = 0; i < args.length; i++) {
 }
 const dir = resolve((command === "check" ? flags.design : paths[0]) || "design");
 const shortDir = relative(process.cwd(), dir) || ".";
-const SKILLS = ["habitat-extract", "habitat-review", "habitat-refresh"];
+const SKILLS = ["habitat-extract", "habitat-research", "habitat-review", "habitat-refresh"];
 
 // A mistyped path should say so plainly, not crash with a stack trace.
 function mustExist(...ps) {
@@ -83,6 +83,8 @@ switch (command) {
     place("templates/tokens.md", join(dir, "tokens.md"));
     place("templates/component.md", join(dir, "components", "_TEMPLATE.md"));
     place("templates/eval.md", join(dir, "evals", "_TEMPLATE.md"));
+    place("templates/insight.md", join(dir, "research", "insights", "_TEMPLATE.md"));
+    place("templates/person.md", join(dir, "research", "people", "_TEMPLATE.md"));
     for (const skill of SKILLS) place(`skills/${skill}/SKILL.md`, resolve(`.claude/skills/${skill}/SKILL.md`));
     // AGENTS.md is read by Cursor, Codex and others. Claude Code reads
     // CLAUDE.md, which can pull AGENTS.md in with an @ import.
@@ -105,7 +107,8 @@ Next:
   3. Check your progress:  npx github:Owl-Listener/habitat validate ${shortDir}
   4. Serve it to your agent:
      claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve ${shortDir}
-  5. Later: /habitat-review to critique a screen, /habitat-refresh when Figma changes.`);
+  5. Have user research? /habitat-research turns it into insights your rules can cite.
+  6. Later: /habitat-review to critique a screen, /habitat-refresh when Figma changes.`);
     break;
   }
   case "validate": {

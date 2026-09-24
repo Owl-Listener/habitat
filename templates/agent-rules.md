@@ -7,6 +7,7 @@ Before building or changing any UI:
 1. Read the principles: call `get_principles` (or read `{{DIR}}/DESIGN.md`).
 2. Find components with `list_components`, and read each one you use with `get_component` (or `{{DIR}}/components/<name>.md`), including its anti-patterns.
 3. Take values from `get_tokens` (or `{{DIR}}/tokens.md`).
+4. Read what the team knows about its users for the journey you are building: `get_research` (or `{{DIR}}/research/`). Use it for the cases no rule covers, and weigh each insight by its confidence.
 
 Always:
 

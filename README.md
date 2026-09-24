@@ -78,22 +78,32 @@ npx github:Owl-Listener/habitat check src/screens --design design
 
 Eight problems down to one is the evidence. Sam stops when the corrections feel like matters of taste rather than rules.
 
-### 5. Switch it on for the team
+### 5. Bring in the research (optional, and worth it)
+
+Rules tell an agent what to do in the cases someone foresaw. Research tells it why, and that's what lets it make a good call when nothing in the files covers the case. An agent that knows "our users do their bookkeeping at the end of a tiring day, and abandon anything that feels risky with money" will reach for undo over a confirmation dialog on a screen nobody wrote a rule for.
+
+Sam runs `/habitat-research` and hands it whatever the team has: reports, interview notes, a research repository export, survey results, support tickets. It can live anywhere. The AI distils it into short findings, one per file, each with its evidence and an honest confidence rating (strong, emerging or hunch), and a researcher confirms every one. Then it links each finding to the rules it supports, and shows Sam which rules rest on nothing, and which findings have no rule yet.
+
+Two things it's careful about. It never copies transcripts or personal data into the files, because they're committed to a repository and read by AI tools; it distils, anonymises and links to the source instead. And it keeps hunches labelled as hunches, so an agent doesn't treat one vivid quote as law.
+
+If the team keeps evidence-based descriptions of who it serves, those can go in too, as situations rather than invented personas. If not, the findings work on their own.
+
+### 6. Switch it on for the team
 
 ```bash
 claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design
 ```
 
-Now, when anyone asks an agent to build UI, it reads the principles, looks up the right components, checks its own code before handing it over, and says "there's no date picker in the system" instead of quietly building one.
+Now, when anyone asks an agent to build UI, it reads the principles, looks up the right components and what the team knows about the people it's building for, checks its own code before handing it over, and says "there's no date picker in the system" instead of quietly building one.
 
-### 6. Keep it true
+### 7. Keep it true
 
 A design system keeps growing, and documentation that no longer matches it is worse for an agent than none, because the agent follows it with confidence.
 
 - **`/habitat-review`** critiques any screen, Figma frame or pull request against the team's rules, and names the rule behind every problem. Anything no rule covers comes back as a proposed new rule, so every review makes the system a little smarter.
 - **`/habitat-refresh`** re-reads Figma when the library changes. It updates the facts, never touches the reasons, and hands Sam a short list of the decisions only a person can make.
 - **`habitat parity`** shows where the documentation and the code disagree.
-- **`habitat validate`** flags any file nobody has reviewed in six months.
+- **`habitat validate`** flags any file nobody has reviewed in six months, research that's more than a year old, and rules that still cite findings newer research has replaced.
 
 ### Or start smaller
 
@@ -108,13 +118,16 @@ your-project/
 │   ├── tokens.md          every token, its tier, and what it means
 │   ├── components/
 │   │   └── button.md      one file per component: a contract, then your notes
+│   ├── research/          optional: what you know about your users
+│   │   ├── insights/      one finding per file, with its evidence and confidence
+│   │   └── people/        optional: the kinds of people you serve
 │   └── evals/             each test run: what the AI got wrong, and what fixed it
 ├── AGENTS.md              the always-on rules (added to your existing file)
 ├── CLAUDE.md
 └── .cursor/rules/habitat.mdc
 ```
 
-Each component file opens with a structured contract: what it's for, when to use each variant, its states, anatomy and layout, which tokens it uses, accessibility, and the things it must never do, each with a because. Your notes go underneath, in plain prose. Have a look at the worked example in [`examples/design`](examples/design) to see a finished set.
+Each component file opens with a structured contract: what it's for, when to use each variant, its states, anatomy and layout, which tokens it uses, accessibility, and the things it must never do, each with a because, and the research it rests on where there is some. Your notes go underneath, in plain prose. Have a look at the worked example in [`examples/design`](examples/design) to see a finished set.
 
 ## The commands
 
@@ -126,13 +139,14 @@ Each component file opens with a structured contract: what it's for, when to use
 | `habitat parity [folder] --code <folder>` | Checks each documented component exists in code with the props it promises, and lists code components with no documentation |
 | `habitat serve [folder]` | Serves your design folder to a coding agent over MCP |
 
-Put `npx github:Owl-Listener/habitat` in front of each one. When an agent is connected through `serve`, it gets six tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, and `check_code` for checking its own work.
+Put `npx github:Owl-Listener/habitat` in front of each one. When an agent is connected through `serve`, it gets seven tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, `get_research` for what the team knows about its users, and `check_code` for checking its own work.
 
 ## The skills and prompts
 
 | For Claude Code | For any other AI | When |
 | --- | --- | --- |
 | `/habitat-extract` | [prompts 0 to 4](prompts) | Writing your system down for the first time |
+| `/habitat-research` | [research.md](prompts/research.md) | When you have user research to bring in |
 | `/habitat-review` | [review.md](prompts/review.md) | Whenever you want a screen critiqued against your rules |
 | `/habitat-refresh` | [refresh.md](prompts/refresh.md) | When your Figma library changes |
 
@@ -151,7 +165,7 @@ Put together with agent-ready, the whole loop looks like this: fix the structure
 ```
 habitat/
 ├── templates/          the blank files that init copies into your project
-├── skills/             the three Claude Code skills
+├── skills/             the four Claude Code skills
 ├── prompts/            the same processes as copy-paste prompts, for any AI
 ├── schema/             what a valid component file and tokens file look like
 ├── bin/ and lib/       the habitat command

@@ -115,7 +115,8 @@
         "required": ["name", "whenToUse"],
         "properties": {
           "name": { "type": "string" },
-          "whenToUse": { "type": "string", "minLength": 4, "description": "The decision rule the agent should apply to pick this variant." }
+          "whenToUse": { "type": "string", "minLength": 4, "description": "The decision rule the agent should apply to pick this variant." },
+          "evidence": { "type": "array", "items": { "type": "string" }, "description": "Ids of the research insights behind this decision, e.g. ['INS-004']." }
         }
       }
     },
@@ -156,7 +157,8 @@
         "properties": {
           "never": { "type": "string", "description": "The forbidden action, e.g. 'place two primary buttons in the same view'." },
           "because": { "type": "string", "description": "The reason, so the rule survives paraphrase." },
-          "source": { "type": "string", "description": "Who stated this rule and when, e.g. 'Sam (design lead), 2026-09-20', so the reason can be traced back to a decision." }
+          "source": { "type": "string", "description": "Who stated this rule and when, e.g. 'Sam (design lead), 2026-09-20', so the reason can be traced back to a decision." },
+          "evidence": { "type": "array", "items": { "type": "string" }, "description": "Ids of the research insights this rule rests on, e.g. ['INS-004'], so the reason can be traced to what users actually did." }
         }
       }
     },

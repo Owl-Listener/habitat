@@ -43,6 +43,12 @@ Some judgement belongs to no single component: what brand colour means, how dens
 
 A primitive (`color.teal.600`) says what a value is; a semantic token (`color.brand.default`) says what it is for. Components should bind to semantic tokens, so that re-theming changes one alias rather than every component, and so that an agent choosing a colour chooses a role, not a hex code. The validator warns when a component binds to a primitive. The usage rule for a token (where it may and may not go) lives in its `useFor` and `avoid`, because that is the guidance a name cannot carry.
 
+## Why research sits underneath the rules
+
+A rule is compressed judgement: it tells an agent what to do in the cases someone foresaw. A research insight is what the judgement was compressed from, and it is what lets an agent reason about a case nobody wrote a rule for. So insights live in `research/insights/`, one finding per file, each with its evidence and an honest `confidence` (strong, emerging or hunch), and rules cite them: `evidence: [INS-004]` on an anti-pattern or variant, or the id in brackets in `DESIGN.md`. The schemas are [`../schema/insight.schema.json`](../schema/insight.schema.json) and, for the optional descriptions of who the product serves, [`../schema/person.schema.json`](../schema/person.schema.json).
+
+The links make three things checkable: a rule that cites research which does not exist or has been retired, a rule that rests only on a hunch, and a finding that no rule has acted on yet. Research files hold distilled, anonymised findings and link to their sources, never transcripts or personal data, because they are committed to a repository and read by AI tools.
+
 ## Why evals are part of the spec
 
 A contract is only as good as the screens an agent builds from it. `evals/` records the same prompt run before the documentation existed and after each round of calibration, with a count of what went wrong. The drop is the evidence that the documentation works, and every problem that survives points at the rule still missing.

@@ -10,10 +10,11 @@ The same process as the Claude Code skill, as prompts you paste into any AI tool
 | [3-principles.md](3-principles.md) | `DESIGN.md` | Any existing principles or brand guidelines you have |
 | [4-calibrate.md](4-calibrate.md) | Sharper rules everywhere, and a before/after count | Everything above |
 
-And two you'll come back to:
+And three you'll come back to:
 
 | Prompt | When | What it produces |
 | --- | --- | --- |
+| [research.md](research.md) | When you have user research to bring in | Insight files, and your rules linked to the evidence behind them |
 | [review.md](review.md) | Any time you want a screen critiqued against your system | A report: problems with the rule each breaks, and gaps in the rules |
 | [refresh.md](refresh.md) | When your Figma library changes | Updated facts, and a list of decisions only you can make |
 

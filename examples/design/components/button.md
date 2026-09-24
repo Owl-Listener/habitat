@@ -77,6 +77,8 @@ variants:
     whenToUse: >-
       The single most important action in a view. There should be at most one primary button visible
       at a time.
+    evidence:
+      - INS-002
   - name: secondary
     whenToUse: 'A supporting action shown next to a primary one, such as Cancel beside Save.'
   - name: ghost
@@ -152,6 +154,9 @@ antiPatterns:
       Primary signals the single most important action. Two of them removes the hierarchy and leaves
       the user unsure which matters.
     source: 'Sam Okafor (design lead), 2026-09-20'
+    evidence:
+      - INS-002
+      - INS-001
   - never: Use a Button to navigate to another page or URL.
     because: >-
       Navigation is a Link. Using a button breaks browser affordances like open-in-new-tab and

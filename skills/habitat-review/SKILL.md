@@ -11,7 +11,7 @@ A review has two jobs. The first is to find what breaks the rules. The second is
 
 ## Rules
 
-1. **Cite the rule for every finding.** Name the file and the rule: "DESIGN.md, One thing at a time" or "components/button.md, anti-pattern 1". If you cannot cite a rule, it is not a violation; it is a gap (see below).
+1. **Cite the rule for every finding.** Name the file and the rule: "DESIGN.md, One thing at a time" or "components/button.md, anti-pattern 1". A research insight counts too ("goes against INS-001"), weighted by its confidence. If you cannot cite a rule or an insight, it is not a violation; it is a gap (see below).
 2. **Their taste, not yours.** Do not flag things the system does not care about. If you think something is poor but no rule covers it, say so as a question in the gaps section, not as a finding.
 3. **Be specific.** Say where (screen area, component, file and line) and what the fix is, in the system's terms: "use `color.brand.default`", "make this a secondary Button".
 4. **Never invent a rule.** Proposed rules go in as `TODO confirm:` for the designer to accept.
@@ -23,6 +23,7 @@ Read, through the habitat MCP server if it is connected (`get_principles`, `list
 - `DESIGN.md`: principles, core journeys, interaction rules, language, colour, layout, "choosing between components", "never".
 - `tokens.md`: what each token means, `useFor` and `avoid`.
 - The component files for every component the screen uses, including `whenToUse`, `antiPatterns`, `anatomy` and `accessibility`.
+- The research for the screen's journey: `get_research`, or `research/insights/`. Insights let you judge things no rule covers, and they are citable too.
 
 ## Step 2: Get the thing to review
 
@@ -50,6 +51,7 @@ Go through the screen against each of these, citing rules:
 - **Tokens by meaning:** a colour can be a valid token and still the wrong one. Check `useFor` and `avoid`: brand colour spent on decoration, error red on a destructive-but-valid action.
 - **Accessibility:** labels, focus order and visibility, keyboard operation, contrast claims in the contracts.
 - **Content:** labels and messages against "Language and voice": verbs on buttons, what-happened-and-how-to-fix errors, banned words, no lorem ipsum.
+- **The people it is for:** does the screen suit the situation and state of mind the research describes? A screen can follow every rule and still ask too much of someone tired at the end of the day.
 
 ## Step 5: The report
 

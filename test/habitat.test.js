@@ -31,6 +31,8 @@ test("fresh templates are valid drafts, and strict mode fails on their TODOs", (
   const dir = scratch();
   assert.ok(habitat(["init"], dir).ok);
   cpSync(join(dir, "design/components/_TEMPLATE.md"), join(dir, "design/components/example.md"));
+  cpSync(join(dir, "design/research/insights/_TEMPLATE.md"), join(dir, "design/research/insights/INS-001.md"));
+  cpSync(join(dir, "design/research/people/_TEMPLATE.md"), join(dir, "design/research/people/example.md"));
   const r = habitat(["validate", "design"], dir);
   assert.ok(r.ok, r.out);
   assert.match(r.out, /0 error\(s\)/);
@@ -46,7 +48,7 @@ test("init installs skills and rules once, and keeps existing content", () => {
   assert.ok(agents.startsWith("# My project"));
   assert.equal(agents.split("habitat:start").length - 1, 1);
   assert.equal(readFileSync(join(dir, "CLAUDE.md"), "utf8"), "@AGENTS.md\n");
-  for (const skill of ["habitat-extract", "habitat-review", "habitat-refresh"]) {
+  for (const skill of ["habitat-extract", "habitat-research", "habitat-review", "habitat-refresh"]) {
     assert.ok(existsSync(join(dir, `.claude/skills/${skill}/SKILL.md`)), skill);
   }
   assert.match(readFileSync(join(dir, ".cursor/rules/habitat.mdc"), "utf8"), /alwaysApply: true/);
@@ -109,17 +111,53 @@ test("parity links every example contract to its code, and finds orphans", () =>
   assert.match(orphan.out, /option "danger" of "variant" not found/);
 });
 
-test("the MCP server answers, resolves aliases and warns about deprecated components", async () => {
+test("the MCP server answers, resolves aliases, serves research and checks code", async (t) => {
   const { Client } = await import("@modelcontextprotocol/sdk/client/index.js");
   const { StdioClientTransport } = await import("@modelcontextprotocol/sdk/client/stdio.js");
   const client = new Client({ name: "test", version: "1" });
   await client.connect(new StdioClientTransport({ command: "node", args: [cli, "serve", example], stderr: "ignore" }));
+  t.after(() => client.close()); // always stop the server, even if an assertion fails
   const call = async (name, args = {}) => (await client.callTool({ name, arguments: args })).content[0].text;
 
   const tools = (await client.listTools()).tools.map((t) => t.name).sort();
-  assert.deepEqual(tools, ["check_code", "get_component", "get_principles", "get_rules", "get_tokens", "list_components"]);
+  assert.deepEqual(tools, ["check_code", "get_component", "get_principles", "get_research", "get_rules", "get_tokens", "list_components"]);
   assert.equal(JSON.parse(await call("get_component", { name: "CTA" })).name.canonical, "Button");
   assert.match(await call("get_component", { name: "Tooltip" }), /report the gap/);
   assert.match(await call("check_code", { code: '<button style={{color: "#fff"}}>Go</button>' }), /raw-element/);
-  await client.close();
+
+  // Research: filtered by journey, and attached to the component rules that cite it.
+  const research = JSON.parse(await call("get_research", { journey: "Send an invoice" }));
+  assert.deepEqual(research.insights.map((i) => i.id).sort(), ["INS-001", "INS-002", "INS-003"]);
+  assert.equal(JSON.parse(await call("get_research", { person: "sole-trader" })).people[0].name, "Sole trader");
+  const button = JSON.parse(await call("get_component", { name: "Button" }));
+  assert.deepEqual(button.research.map((r) => r.id).sort(), ["INS-001", "INS-002"]);
+  assert.match(await call("get_research", { journey: "Onboarding" }), /No research matches/);
+});
+
+test("validate checks research: citations, retired and hunch evidence, stale findings, personal data", () => {
+  const dir = scratch();
+  cpSync(example, join(dir, "design"), { recursive: true });
+  const edit = (file, from, to) => {
+    const p = join(dir, "design", file);
+    writeFileSync(p, readFileSync(p, "utf8").replace(from, to));
+  };
+  // A rule citing an insight that does not exist, and one citing a retired insight.
+  edit("components/input.md", "- INS-003", "- INS-099");
+  edit("research/insights/INS-002.md", "status: reviewed", "status: retired\nsupersededBy: INS-001");
+  // A rule resting only on a hunch.
+  edit("DESIGN.md", "(INS-003)", "(INS-004)");
+  // An old finding, and a quote that leaks personal data.
+  edit("research/insights/INS-001.md", "lastReviewed: '2026-09-01'", "lastReviewed: '2024-01-01'");
+  edit("research/insights/INS-003.md", "telling me off", "telling me off, said jo.bloggs@example.com");
+  // A person citing an insight that does not exist.
+  edit("research/people/sole-trader.md", "evidence:", "evidence:\n  - INS-050");
+
+  const r = habitat(["validate", "design"], dir);
+  assert.match(r.out, /cites INS-099, which has no file/);
+  assert.match(r.out, /cites retired INS-002; see INS-001/);
+  assert.match(r.out, /DESIGN.md line \d+ rests only on a hunch \(INS-004\)/);
+  assert.match(r.out, /last reviewed \d+ days ago; check the finding still holds/);
+  assert.match(r.out, /seems to contain an email address/);
+  assert.match(r.out, /evidence cites INS-050/);
+  assert.doesNotMatch(r.out, /phone number/, "dates and counts are not phone numbers");
 });

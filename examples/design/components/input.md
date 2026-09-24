@@ -144,6 +144,8 @@ antiPatterns:
       Pre-emptive errors feel punishing and create anxiety. Validation should fire on blur or
       submit, not on mount.
     source: 'Sam Okafor (design lead), 2026-09-20'
+    evidence:
+      - INS-003
   - never: Set raw colour or spacing values on the input.
     because: >-
       Unbound values are invisible to the design system and to an agent reading it. Always bind to a

@@ -41,6 +41,7 @@ Read the templates in `design/` before writing, and follow their field names exa
 1. Ask for the Figma file link (the library file where the components and variables live).
 2. Check that you have the Figma MCP tools (their names include `figma`, e.g. `get_metadata`, `get_variable_defs`, `get_design_context`, `get_screenshot`, `search_design_system`). If not, tell the designer how to connect the Figma MCP server to their AI tool and stop there, or offer to continue from screenshots and exports they paste in.
 3. Ask: **"Which two or three user journeys matter most in your product?"** For example, "send an invoice" or "invite a teammate". Write them into the Core journeys section of `DESIGN.md`. They decide which components to document first, and they are what the evals test. Starting from journeys rather than a list of components keeps the work small and tied to real screens.
+4. Ask whether the team has user research. If it does, suggest running `/habitat-research` after this extraction (or before, if the research is fresh), so the rules you write can cite the evidence behind them.
 
 ## Step 1: Baseline eval
 
@@ -126,4 +127,4 @@ The drop in problems, baseline to latest run, is the measure of what the documen
 4. Check that the always-on rules are in place (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/habitat.mdc`); `init` adds them.
 5. Show them how to serve the folder to their coding agent:
    `claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design`
-6. Tell them what comes next: `/habitat-review` to critique any screen against the system, and `/habitat-refresh` whenever the Figma library changes.
+6. Tell them what comes next: `/habitat-research` to ground the rules in user research, `/habitat-review` to critique any screen against the system, and `/habitat-refresh` whenever the Figma library changes.
