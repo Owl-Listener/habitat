@@ -17,6 +17,17 @@ Keep it short enough that you would actually read it: one to three pages.
 
 TODO: One paragraph. Who is it for, what are they trying to get done, and what state of mind are they usually in when they use it? (e.g. "Support agents clearing a queue under time pressure. They want speed and calm, not delight.")
 
+## Core journeys
+
+<!--
+The two or three journeys that matter most. They decide which components to
+document first, and they are the screens you test the AI against in evals/.
+Start here rather than with a list of components.
+-->
+
+1. TODO e.g. "Send an invoice: from a customer record to a sent PDF."
+2. TODO
+
 ## Principles
 
 <!--
@@ -51,6 +62,20 @@ TODO: How tight or airy screens should be, the grid, how content is grouped, and
 
 TODO: How the interface talks. Button labels (verbs? sentence case?), error messages, empty states, and words you never use.
 
+## Interaction rules
+
+<!--
+Behaviour that spans many components, which no single component file can own.
+Agents get these wrong constantly, and it is where accessibility breaks.
+-->
+
+- **Forms and validation:** TODO When does validation run (on blur, on submit)? Where do errors appear? Where does focus go when submit fails?
+- **Errors and recovery:** TODO How are system errors shown, and what can the user do next?
+- **Dialogs and focus:** TODO When is a dialog allowed? Where does focus go when it opens and closes? How is it dismissed?
+- **Loading and empty states:** TODO What does the user see while waiting, and when there is nothing to show?
+- **Destructive actions:** TODO How are irreversible actions confirmed or undone?
+- **Sensitive data:** TODO How are personal or financial details shown, masked or confirmed?
+
 ## Choosing between components
 
 <!--
@@ -78,3 +103,9 @@ again. Each entry here is a lesson the system learned the hard way.
 | Date | What the AI did | The rule we added |
 | --- | --- | --- |
 | TODO | TODO | TODO |
+
+<!-- Full runs, with before/after problem counts, live in evals/. -->
+
+---
+
+Owner: TODO who approves changes to these principles · Last reviewed: TODO YYYY-MM-DD

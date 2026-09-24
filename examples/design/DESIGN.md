@@ -6,6 +6,12 @@
 
 Ledger is a bookkeeping tool for people who run small businesses and are not accountants. They open it at the end of a long day, usually to do one chore (send an invoice, file a receipt) and leave. They are tired, slightly anxious about money, and want to feel in control rather than impressed.
 
+## Core journeys
+
+1. **Send an invoice:** from a customer record to a sent invoice, in under two minutes.
+2. **File a receipt:** photograph or upload a receipt and categorise it.
+3. **See where the money went:** the monthly overview of income and spending.
+
 ## Principles
 
 ### One thing at a time
@@ -44,6 +50,16 @@ Comfortable, not compact. Controls use `md` size by default; `sm` only in tables
 - Error messages say what happened and how to fix it: "Enter a date after 1 Jan 2020", not "Invalid date".
 - Never: "Oops", "Whoops", exclamation marks, or blaming the user ("You entered…").
 
+## Interaction rules
+
+- **Forms and validation:** validate a field when the user leaves it, and again on submit; never while they are still typing. On a failed submit, move focus to the first field with an error. The submit Button stays enabled, because a disabled Save gives no reason.
+- **Errors and recovery:** field errors go inline under the Input. Problems with the whole page (lost connection, a failed save) go in a banner at the top that says what to do next, and nothing the user typed is lost.
+- **Confirmations:** confirm success where the user is looking, for example the invoice's status changing to "Sent". Never only in a toast in the corner, which tired users miss.
+- **Dialogs and focus:** a dialog is only for one short decision. Focus moves to the dialog's first control when it opens and back to the control that opened it when it closes. Escape always closes it.
+- **Loading and empty states:** show the page's layout with placeholders while loading, never a full-screen spinner. Empty states say what will appear here and offer the one action that fills it.
+- **Destructive actions:** prefer undo over confirmation. Only irreversible actions that involve money (voiding a paid invoice) ask for confirmation, and the confirm button names the action ("Void invoice").
+- **Sensitive data:** bank details show only the last four digits until the user chooses to reveal them.
+
 ## Choosing between components
 
 - **Button vs. Link:** a Button makes something happen here; a Link takes you somewhere else. If it changes the URL, it is a Link.
@@ -63,3 +79,9 @@ Comfortable, not compact. Controls use `md` size by default; `sm` only in tables
 | 2026-09-20 | Put "Save" and "Save and send" side by side, both primary | "One thing at a time": one primary action per view |
 | 2026-09-20 | Showed a red Delete button | Colour: red only means an error, never danger |
 | 2026-09-21 | Wrote "Oops! Something went wrong" | Language: no "Oops", say what happened and how to fix it |
+
+Full runs, with before and after problem counts, are in [evals/](evals/).
+
+---
+
+Owner: Sam Okafor (design lead) · Last reviewed: 2026-09-20

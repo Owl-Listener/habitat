@@ -1,6 +1,11 @@
 ---
 kind: component
 status: reviewed
+owner: Design systems team
+lastReviewed: '2026-09-20'
+figma:
+  url: 'https://www.figma.com/design/EXAMPLE/Ledger-Library'
+  nodeId: '12:340'
 name:
   canonical: Button
   aliases:
@@ -21,6 +26,13 @@ props:
       - secondary
       - ghost
     description: Visual emphasis of the button.
+    figma:
+      property: Type
+      kind: VARIANT
+      values:
+        primary: Primary
+        secondary: Secondary
+        ghost: Ghost
   - name: size
     type: '''sm'' | ''md'''
     required: false
@@ -29,11 +41,20 @@ props:
       - sm
       - md
     description: Control size. Use sm only in dense or secondary contexts.
+    figma:
+      property: Size
+      kind: VARIANT
+      values:
+        sm: Small
+        md: Medium
   - name: loading
     type: boolean
     required: false
     default: false
     description: Shows a busy spinner and blocks interaction while an action is in flight.
+    figma:
+      property: Loading
+      kind: BOOLEAN
   - name: disabled
     type: boolean
     required: false
@@ -41,10 +62,16 @@ props:
     description: >-
       Disables the button. Prefer hiding an action over disabling it when the user cannot know why
       it is unavailable.
+    figma:
+      property: Disabled
+      kind: BOOLEAN
   - name: children
     type: string
     required: true
     description: 'The label. Use a verb that names the action, e.g. ''Save changes''.'
+    figma:
+      property: Label
+      kind: TEXT
 variants:
   - name: primary
     whenToUse: >-
@@ -69,6 +96,26 @@ states:
     description: Non-interactive; uses disabled surface and text tokens and not-allowed cursor.
   - name: loading
     description: 'Action in flight; shows a spinner, sets aria-busy, and blocks interaction.'
+anatomy:
+  parts:
+    - name: label
+      description: 'The action, as a verb phrase.'
+      required: true
+    - name: leadingIcon
+      description: Optional icon before the label; never an icon without a label.
+      required: false
+    - name: spinner
+      description: Busy indicator that replaces the leading icon.
+      required: false
+      visibleWhen: loading is true
+  layout:
+    direction: row
+    align: center
+    justify: center
+    gap: space.sm
+    padding: space.md space.lg
+    width: hug
+    minTarget: 44px
 tokens:
   primary.background: color.brand.default
   primary.background.hover: color.brand.hover
@@ -104,19 +151,23 @@ antiPatterns:
     because: >-
       Primary signals the single most important action. Two of them removes the hierarchy and leaves
       the user unsure which matters.
+    source: 'Sam Okafor (design lead), 2026-09-20'
   - never: Use a Button to navigate to another page or URL.
     because: >-
       Navigation is a Link. Using a button breaks browser affordances like open-in-new-tab and
       confuses assistive technology about whether something will happen or somewhere will be
       visited.
+    source: 'Sam Okafor (design lead), 2026-09-20'
   - never: Disable a button without making the reason discoverable.
     because: >-
       A disabled control with no explanation reads as a dead end. Either show why it is disabled or
       hide it until it is available.
+    source: 'Sam Okafor (design lead), 2026-09-20'
   - never: Set raw colour or spacing values on the button.
     because: >-
       Unbound values are invisible to the design system and to an agent reading it. Always bind to a
       token.
+    source: 'Sam Okafor (design lead), 2026-09-20'
 accessibility:
   role: button (native <button> element)
   keyboard:

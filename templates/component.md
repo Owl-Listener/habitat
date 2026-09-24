@@ -3,13 +3,18 @@
 #
 # The block between the --- lines is the contract. It is structured so an
 # agent can rely on it and the validator can check it. Much of it can be read
-# from Figma (name, props, variants, states, tokens). The rest (purpose, when
-# to use each variant, anti-patterns) has to come from the people who designed
-# it. Leave TODO where you do not know yet; never guess.
+# from Figma (name, props, variants, states, anatomy, tokens). The rest
+# (purpose, when to use each variant, anti-patterns) has to come from the
+# people who designed it. Leave TODO where you do not know yet; never guess.
 #
-# Set status to "reviewed" once a person has checked every field.
+# status: draft while being filled in; reviewed once a person has checked
+# every field (add lastReviewed then); deprecated when retiring it (add
+# replacedBy, so agents know what to use instead).
 kind: component
 status: draft
+owner: TODO who approves changes to this component
+# lastReviewed: 2026-01-31     # add when a person has checked it
+# replacedBy: NewComponent     # only when deprecated
 figma:
   url: TODO link to the component in Figma
   nodeId: TODO
@@ -25,6 +30,9 @@ props:                        # from Figma component properties
     type: TODO               # e.g. boolean, string, 'primary' | 'secondary'
     required: false
     description: TODO
+    figma:
+      property: TODO         # the property name in Figma, e.g. Type
+      kind: VARIANT          # VARIANT, BOOLEAN, TEXT or INSTANCE_SWAP
 
 variants:                     # from Figma; whenToUse comes from you
   - name: TODO
@@ -34,7 +42,20 @@ states:                       # default, hover, focus, active, disabled, loading
   - name: default
     description: TODO
 
-tokens:                       # visual property -> token name from tokens.md
+anatomy:                      # from the Figma layers and auto layout
+  parts:
+    - name: TODO             # e.g. label, leadingIcon, spinner
+      description: TODO
+      required: true
+      # visibleWhen: loading is true
+  layout:
+    direction: row           # row or column
+    align: TODO              # e.g. center
+    gap: TODO                # a token name, e.g. space.sm
+    padding: TODO            # token names, e.g. space.md space.lg
+    width: TODO              # hug, fill, or a constraint
+
+tokens:                       # visual property -> semantic token name from tokens.md
   background: TODO
 
 relationships:
@@ -45,6 +66,7 @@ relationships:
 antiPatterns:                 # the heart of it: what must never happen, and why
   - never: TODO the forbidden move
     because: TODO the reason, so the rule survives paraphrase
+    source: TODO who said so, and when
 
 accessibility:
   role: TODO
@@ -57,7 +79,7 @@ content:
   examples:                   # real labels and copy from your product, never lorem ipsum
     - TODO
 
-# codeConnect:                # optional: where this lives in code
+# codeConnect:                # where this lives in code; agents need Figma and code to match
 #   implementation: "@your-org/ui/Button"
 #   propMap: { variant: variant }
 ---

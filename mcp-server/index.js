@@ -38,13 +38,17 @@ export async function serve(dir) {
 
   server.registerTool(
     "list_components",
-    { description: "List every component in the system with its canonical name, purpose and review status." },
+    {
+      description:
+        "List every component in the system with its canonical name, purpose and status. Build only from these. If a screen needs something that is not here, tell the user about the gap; never invent a lookalike or hand-code a replacement.",
+    },
     async () =>
       text(
         loadDesign(dir).components.map(({ data }) => ({
           name: data?.name?.canonical,
           purpose: data?.purpose,
           status: data?.status,
+          ...(data?.replacedBy && { replacedBy: data.replacedBy }),
         }))
       )
   );
@@ -58,8 +62,18 @@ export async function serve(dir) {
     },
     async ({ name }) => {
       const match = findComponent(loadDesign(dir), name);
-      if (!match) return { ...text(`No component named "${name}". Try list_components.`), isError: true };
-      return text({ ...match.data, notes: match.body });
+      if (!match) {
+        return {
+          ...text(`No component named "${name}". Check list_components; if nothing fits, report the gap to the user instead of inventing one.`),
+          isError: true,
+        };
+      }
+      const { data, body } = match;
+      const warning =
+        data.status === "deprecated"
+          ? { warning: `${data.name.canonical} is deprecated. Do not use it in new work${data.replacedBy ? `; use ${data.replacedBy} instead` : ""}.` }
+          : {};
+      return text({ ...warning, ...data, notes: body });
     }
   );
 

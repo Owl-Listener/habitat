@@ -1,6 +1,11 @@
 ---
 kind: component
 status: reviewed
+owner: Design systems team
+lastReviewed: '2026-09-20'
+figma:
+  url: 'https://www.figma.com/design/EXAMPLE/Ledger-Library'
+  nodeId: '14:210'
 name:
   canonical: Input
   aliases:
@@ -16,6 +21,9 @@ props:
     type: string
     required: true
     description: The visible label for the field. Always required — a field without a label is inaccessible.
+    figma:
+      property: Label
+      kind: TEXT
   - name: type
     type: string
     required: false
@@ -28,23 +36,35 @@ props:
       - tel
       - url
     description: The HTML input type. Controls the keyboard on mobile and the browser's built-in validation.
+    figma:
+      property: Type
+      kind: VARIANT
   - name: placeholder
     type: string
     required: false
     description: >-
       Hint text shown when the field is empty. Use sparingly — it disappears on input and must not
       replace a label.
+    figma:
+      property: Placeholder
+      kind: TEXT
   - name: errorMessage
     type: string
     required: false
     description: >-
       When set, puts the field into an error state and displays this message below the input. Must
       explain what went wrong and how to fix it.
+    figma:
+      property: Error message
+      kind: TEXT
   - name: disabled
     type: boolean
     required: false
     default: false
     description: Disables the field. Prefer hiding it or explaining why it is unavailable.
+    figma:
+      property: Disabled
+      kind: BOOLEAN
 variants:
   - name: default
     whenToUse: Any time the user needs to type a short piece of text. This is the standard form field.
@@ -61,6 +81,24 @@ states:
     description: 'Non-interactive. Uses disabled surface and text tokens, not-allowed cursor.'
   - name: error
     description: Validation has failed. Border and message use the error token. aria-invalid is set.
+anatomy:
+  parts:
+    - name: label
+      description: 'Visible label above the field, naming the data collected.'
+      required: true
+    - name: field
+      description: The text entry area.
+      required: true
+    - name: errorMessage
+      description: Says what went wrong and how to fix it.
+      required: false
+      visibleWhen: errorMessage is set
+  layout:
+    direction: column
+    align: stretch
+    gap: space.xs
+    padding: space.sm space.md
+    width: fill
 tokens:
   background: color.surface.default
   text: color.text.default
@@ -100,18 +138,22 @@ antiPatterns:
       A placeholder disappears the moment the user starts typing, leaving them with no way to recall
       what the field asked for. Screen readers announce the label, not the placeholder. A field
       without a label is inaccessible.
+    source: 'Sam Okafor (design lead), 2026-09-20'
   - never: Show an error state before the user has had a chance to interact with the field.
     because: >-
       Pre-emptive errors feel punishing and create anxiety. Validation should fire on blur or
       submit, not on mount.
+    source: 'Sam Okafor (design lead), 2026-09-20'
   - never: Set raw colour or spacing values on the input.
     because: >-
       Unbound values are invisible to the design system and to an agent reading it. Always bind to a
       token.
+    source: 'Sam Okafor (design lead), 2026-09-20'
   - never: Use an Input for multi-line text entry.
     because: >-
       A single-line input clips long text and sets the wrong expectation. Use a Textarea for
       anything that might be more than one line.
+    source: 'Sam Okafor (design lead), 2026-09-20'
 accessibility:
   role: textbox (native <input> element)
   keyboard:

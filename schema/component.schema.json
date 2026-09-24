@@ -9,8 +9,21 @@
   "properties": {
     "kind": { "const": "component" },
     "status": {
-      "enum": ["draft", "reviewed"],
-      "description": "'draft' while the AI and designer are still filling it in. 'reviewed' once a person has checked every field. A reviewed file may not contain TODOs."
+      "enum": ["draft", "reviewed", "deprecated"],
+      "description": "'draft' while the AI and designer are still filling it in. 'reviewed' once a person has checked every field; a reviewed file may not contain TODOs. 'deprecated' when the component is being retired: agents must not use it, and should use replacedBy instead."
+    },
+    "replacedBy": {
+      "type": "string",
+      "description": "For a deprecated component, the canonical name of the component to use instead. Must exist in components/."
+    },
+    "owner": {
+      "type": "string",
+      "description": "Who answers questions about this component and approves changes to it: a person or a team."
+    },
+    "lastReviewed": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "When a person last checked this file against Figma and code (YYYY-MM-DD). Stale documentation is worse than none, because an agent follows it with confidence; the validator warns after six months."
     },
     "figma": {
       "type": "object",
@@ -46,7 +59,50 @@
           "required": { "type": "boolean" },
           "default": { "description": "Default value if not required." },
           "options": { "type": "array", "items": {}, "description": "Allowed values for enum-like props." },
-          "description": { "type": "string", "minLength": 4 }
+          "description": { "type": "string", "minLength": 4 },
+          "figma": {
+            "type": "object",
+            "description": "The matching Figma component property, so an agent can translate between the canvas and code.",
+            "required": ["property"],
+            "properties": {
+              "property": { "type": "string", "description": "The property name as it appears in Figma, e.g. 'Type' or 'Show icon'." },
+              "kind": { "enum": ["VARIANT", "BOOLEAN", "TEXT", "INSTANCE_SWAP"] },
+              "values": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Prop value to Figma value, when they differ, e.g. { primary: 'Primary' }." }
+            }
+          }
+        }
+      }
+    },
+    "anatomy": {
+      "type": "object",
+      "description": "The component's parts and layout, read from its Figma layers and auto layout. Without this, an agent knows which tokens a component uses but not how it is put together, which is where generated UI visibly drifts.",
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "properties": {
+              "name": { "type": "string", "description": "e.g. 'label', 'leadingIcon', 'spinner'." },
+              "description": { "type": "string" },
+              "required": { "type": "boolean", "description": "Whether the part is always present." },
+              "visibleWhen": { "type": "string", "description": "The condition that shows an optional part, e.g. 'loading is true'." }
+            }
+          }
+        },
+        "layout": {
+          "type": "object",
+          "description": "Auto layout, with spacing given as token names.",
+          "properties": {
+            "direction": { "enum": ["row", "column"] },
+            "align": { "type": "string", "description": "Cross-axis alignment, e.g. 'center'." },
+            "justify": { "type": "string", "description": "Main-axis alignment, e.g. 'center', 'space-between'." },
+            "gap": { "type": "string", "description": "Token name, e.g. 'space.sm'." },
+            "padding": { "type": "string", "description": "Token names, CSS order, e.g. 'space.md space.lg'." },
+            "width": { "type": "string", "description": "'hug', 'fill', or a token or constraint, e.g. 'fill, max 480px'." },
+            "height": { "type": "string" },
+            "minTarget": { "type": "string", "description": "Minimum hit area, e.g. '44px'." }
+          }
         }
       }
     },
@@ -99,7 +155,8 @@
         "required": ["never", "because"],
         "properties": {
           "never": { "type": "string", "description": "The forbidden action, e.g. 'place two primary buttons in the same view'." },
-          "because": { "type": "string", "description": "The reason, so the rule survives paraphrase." }
+          "because": { "type": "string", "description": "The reason, so the rule survives paraphrase." },
+          "source": { "type": "string", "description": "Who stated this rule and when, e.g. 'Sam (design lead), 2026-09-20', so the reason can be traced back to a decision." }
         }
       }
     },

@@ -10,15 +10,18 @@ The contract is the YAML front matter at the top of each `components/<name>.md`.
 | --- | --- | --- | --- |
 | `name` | Canonical name plus aliases, so the same thing is referred to the same way | Figma (name), designer (aliases) | Naming consistency |
 | `purpose` | Why the component exists, by purpose not appearance | Designer, starting from the Figma description | Description coverage and quality |
-| `props` | Every settable prop, typed | Figma component properties | Component properties |
+| `props` | Every settable prop, typed, with its Figma property name | Figma component properties | Component properties |
 | `variants` | Named variants and the decision rule for each | Figma (names), designer (`whenToUse`) | Component coverage |
 | `states` | The interaction and status states the component defines | Figma variant properties | State completeness |
+| `anatomy` | The named parts, which are optional and what shows them, and the auto layout | Figma layers and auto layout | Auto-layout |
 | `tokens` | Which token binds to which visual property | Figma variable bindings | Token binding |
 | `relationships` | Where the component belongs, what it contains, what it pairs with | Designer, checked against real screens | Relationships and hierarchy |
-| `antiPatterns` | What the agent must never do, and why | Designer only | The refusals that keep generated UI honest |
+| `antiPatterns` | What the agent must never do, why, and who said so | Designer only | The refusals that keep generated UI honest |
 | `accessibility` | Role, keyboard, focus, ARIA, contrast | AI proposes the standard, designer confirms | Accessibility annotations |
 | `content` | Real example content, never lorem | Figma text layers and real screens | Real content |
 | `codeConnect` | Optional bridge to the implementation, and the prop mapping | Codebase or Figma Code Connect | Code Connect bridge |
+
+Alongside these, every file carries lifecycle fields: `status` (draft, reviewed, deprecated), `owner`, `lastReviewed`, and `replacedBy` for deprecated components. They answer the questions an agent cannot: is this still true, and who decides?
 
 Look down the third column. Figma holds the *what*. The *why* only exists in people's heads, which is why habitat's extraction is half reading and half interview.
 
@@ -34,7 +37,15 @@ Each anti-pattern has two parts on purpose: the `never`, which is the rule, and 
 
 ## Why principles sit above components
 
-Some judgement belongs to no single component: what brand colour means, how dense a screen should be, how the product talks. That lives in `DESIGN.md`, in prose, and the MCP server tells agents to read it first. It is the layer Buzz Usborne describes in [Designing with AI](https://buzzusborne.com/work/designing-with-ai/): articulating *how* you design, not only *what* you design.
+Some judgement belongs to no single component: what brand colour means, how dense a screen should be, how the product talks, how forms validate and where focus goes. That lives in `DESIGN.md`, in prose, and the MCP server tells agents to read it first. It is the layer Buzz Usborne describes in [Designing with AI](https://buzzusborne.com/work/designing-with-ai/): articulating *how* you design, not only *what* you design.
+
+## Why tokens have tiers
+
+A primitive (`color.teal.600`) says what a value is; a semantic token (`color.brand.default`) says what it is for. Components should bind to semantic tokens, so that re-theming changes one alias rather than every component, and so that an agent choosing a colour chooses a role, not a hex code. The validator warns when a component binds to a primitive. The usage rule for a token (where it may and may not go) lives in its `useFor` and `avoid`, because that is the guidance a name cannot carry.
+
+## Why evals are part of the spec
+
+A contract is only as good as the screens an agent builds from it. `evals/` records the same prompt run before the documentation existed and after each round of calibration, with a count of what went wrong. The drop is the evidence that the documentation works, and every problem that survives points at the rule still missing.
 
 ## Why this is a standard, not just a file format
 
