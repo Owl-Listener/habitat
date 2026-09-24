@@ -1,129 +1,90 @@
-#!/usr/bin/env node
 /**
  * habitat MCP server
  *
- * Serves the design system to a coding agent over MCP (stdio), so the agent
- * queries the system instead of guessing. Exposes four tools:
+ * Serves a design folder to a coding agent over MCP (stdio), so the agent
+ * reads your system instead of guessing at it. Five tools:
+ *   - get_principles  : DESIGN.md, the product-wide rules and taste
  *   - list_components : names + purposes of every component
- *   - get_component   : the full contract for one component
- *   - get_tokens      : the design tokens
- *   - get_rules       : every anti-pattern and relationship, aggregated
+ *   - get_component   : the full contract and notes for one component
+ *   - get_tokens      : the tokens, with what each one means
+ *   - get_rules       : every anti-pattern across the system, in one place
  *
- * Targets @modelcontextprotocol/sdk. If the SDK's API has shifted, the tool
- * registrations below are the only thing that needs adjusting.
+ * Files are re-read on every call, so edits show up without a restart.
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { readFileSync, readdirSync, existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join, resolve } from "node:path";
+import { loadDesign, findComponent } from "../lib/habitat.js";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, "..");
-const componentsDir = join(root, "components");
-const tokensPath = join(root, "tokens", "tokens.json");
+const text = (value) => ({
+  content: [{ type: "text", text: typeof value === "string" ? value : JSON.stringify(value, null, 2) }],
+});
 
-function loadComponents() {
-  const out = {};
-  if (!existsSync(componentsDir)) return out;
-  for (const entry of readdirSync(componentsDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const metaPath = join(componentsDir, entry.name, `${entry.name}.meta.json`);
-    if (existsSync(metaPath)) {
-      try {
-        const meta = JSON.parse(readFileSync(metaPath, "utf8"));
-        const key = meta?.name?.canonical || entry.name;
-        out[key] = meta;
-      } catch (err) {
-        process.stderr.write(`habitat: failed to parse ${metaPath}: ${err}\n`);
-      }
+export async function serve(dir) {
+  const server = new McpServer({ name: "habitat", version: "0.2.0" });
+
+  server.registerTool(
+    "get_principles",
+    {
+      description:
+        "Read this first, before building any UI. Returns DESIGN.md: the product's design principles, how it uses colour, layout and language, and the system-wide rules the agent must follow.",
+    },
+    async () => {
+      const { principles } = loadDesign(dir);
+      return text(principles ? principles.body : "No DESIGN.md in this design folder yet.");
     }
-  }
-  return out;
-}
+  );
 
-function loadTokens() {
-  return existsSync(tokensPath)
-    ? JSON.parse(readFileSync(tokensPath, "utf8"))
-    : {};
-}
+  server.registerTool(
+    "list_components",
+    { description: "List every component in the system with its canonical name, purpose and review status." },
+    async () =>
+      text(
+        loadDesign(dir).components.map(({ data }) => ({
+          name: data?.name?.canonical,
+          purpose: data?.purpose,
+          status: data?.status,
+        }))
+      )
+  );
 
-const server = new McpServer({ name: "habitat", version: "0.1.0" });
-
-server.tool(
-  "list_components",
-  "List every component in the system with its canonical name and purpose.",
-  {},
-  async () => {
-    const components = loadComponents();
-    const list = Object.values(components).map((c) => ({
-      name: c.name?.canonical,
-      purpose: c.purpose,
-    }));
-    return { content: [{ type: "text", text: JSON.stringify(list, null, 2) }] };
-  }
-);
-
-server.tool(
-  "get_component",
-  "Get the full agent-readable contract for one component by name.",
-  { name: z.string().describe("Canonical component name, e.g. 'Button'.") },
-  async ({ name }) => {
-    const components = loadComponents();
-    const match =
-      components[name] ||
-      Object.values(components).find(
-        (c) =>
-          c.name?.canonical?.toLowerCase() === name.toLowerCase() ||
-          (c.name?.aliases || []).some(
-            (a) => a.toLowerCase() === name.toLowerCase()
-          )
-      );
-    if (!match) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `No component named "${name}". Try list_components.`,
-          },
-        ],
-        isError: true,
-      };
+  server.registerTool(
+    "get_component",
+    {
+      description:
+        "Get the full contract for one component: when to use each variant, states, token bindings, accessibility, and the anti-patterns it must never break. Also returns the designer's notes.",
+      inputSchema: { name: z.string().describe("Canonical name or alias, e.g. 'Button' or 'CTA'.") },
+    },
+    async ({ name }) => {
+      const match = findComponent(loadDesign(dir), name);
+      if (!match) return { ...text(`No component named "${name}". Try list_components.`), isError: true };
+      return text({ ...match.data, notes: match.body });
     }
-    return {
-      content: [{ type: "text", text: JSON.stringify(match, null, 2) }],
-    };
-  }
-);
+  );
 
-server.tool(
-  "get_tokens",
-  "Get the design tokens. Every component property is bound to one of these.",
-  {},
-  async () => {
-    return {
-      content: [{ type: "text", text: JSON.stringify(loadTokens(), null, 2) }],
-    };
-  }
-);
+  server.registerTool(
+    "get_tokens",
+    { description: "Get the design tokens with what each one means, where to use it, and where not to. Bind to these; never use raw values." },
+    async () => {
+      const { tokens } = loadDesign(dir);
+      return text(tokens ? { tokens: tokens.data.tokens, notes: tokens.body } : "No tokens.md in this design folder yet.");
+    }
+  );
 
-server.tool(
-  "get_rules",
-  "Get every anti-pattern and relationship across the whole system, so the agent knows what to never do and how components fit together.",
-  {},
-  async () => {
-    const components = loadComponents();
-    const rules = Object.values(components).map((c) => ({
-      component: c.name?.canonical,
-      antiPatterns: c.antiPatterns || [],
-      relationships: c.relationships || {},
-    }));
-    return { content: [{ type: "text", text: JSON.stringify(rules, null, 2) }] };
-  }
-);
+  server.registerTool(
+    "get_rules",
+    { description: "Get every anti-pattern and relationship across the whole system, so the agent knows what never to do and how components fit together." },
+    async () =>
+      text(
+        loadDesign(dir).components.map(({ data }) => ({
+          component: data?.name?.canonical,
+          antiPatterns: data?.antiPatterns || [],
+          relationships: data?.relationships || {},
+        }))
+      )
+  );
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
-process.stderr.write("habitat MCP server running on stdio\n");
+  await server.connect(new StdioServerTransport());
+  process.stderr.write(`habitat MCP server serving ${loadDesign(dir).root}\n`);
+}

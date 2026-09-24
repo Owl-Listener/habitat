@@ -2,11 +2,24 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/Owl-Listener/habitat/schema/component.schema.json",
   "title": "habitat component contract",
-  "description": "The machine-readable contract every habitat component must satisfy. Each field exists because an agent needs it to use the component without guessing. Fields map one-to-one to the checks in agent-ready.",
+  "description": "The YAML front matter of a components/<name>.md file. Each field exists because an agent needs it to use the component without guessing. Any string value may start with 'TODO' while the file is a draft; the validator counts them, and a file marked 'reviewed' must have none.",
   "type": "object",
-  "required": ["name", "purpose", "props", "variants", "states", "tokens", "relationships", "antiPatterns", "accessibility", "content", "codeConnect"],
+  "required": ["kind", "status", "name", "purpose", "variants", "states", "tokens", "antiPatterns", "accessibility", "content"],
   "additionalProperties": false,
   "properties": {
+    "kind": { "const": "component" },
+    "status": {
+      "enum": ["draft", "reviewed"],
+      "description": "'draft' while the AI and designer are still filling it in. 'reviewed' once a person has checked every field. A reviewed file may not contain TODOs."
+    },
+    "figma": {
+      "type": "object",
+      "description": "Where this component lives in Figma, so the agent (and the next person) can go back to the source.",
+      "properties": {
+        "url": { "type": "string" },
+        "nodeId": { "type": "string" }
+      }
+    },
     "name": {
       "type": "object",
       "description": "Canonical name plus any aliases, so the same component is referred to consistently. Maps to agent-ready: naming consistency.",
@@ -18,40 +31,42 @@
     },
     "purpose": {
       "type": "string",
-      "minLength": 20,
+      "minLength": 4,
       "description": "Why this component exists and what job it does, described by purpose not appearance. 'Lets a user commit to an action' not 'a rounded rectangle with a label'. Maps to agent-ready: description coverage and quality."
     },
     "props": {
       "type": "array",
-      "description": "Every prop the agent can set, fully typed. Maps to agent-ready: component properties.",
+      "description": "Every prop the agent can set. Usually lifted from the Figma component properties. Maps to agent-ready: component properties.",
       "items": {
         "type": "object",
-        "required": ["name", "type", "required", "description"],
+        "required": ["name", "type", "description"],
         "properties": {
           "name": { "type": "string" },
           "type": { "type": "string", "description": "e.g. 'string', 'boolean', \"'primary' | 'secondary' | 'ghost'\"." },
           "required": { "type": "boolean" },
           "default": { "description": "Default value if not required." },
           "options": { "type": "array", "items": {}, "description": "Allowed values for enum-like props." },
-          "description": { "type": "string", "minLength": 5 }
+          "description": { "type": "string", "minLength": 4 }
         }
       }
     },
     "variants": {
       "type": "array",
+      "minItems": 1,
       "description": "Named variants and, crucially, WHEN to use each. Maps to agent-ready: component coverage and description quality.",
       "items": {
         "type": "object",
         "required": ["name", "whenToUse"],
         "properties": {
           "name": { "type": "string" },
-          "whenToUse": { "type": "string", "minLength": 10, "description": "The decision rule the agent should apply to pick this variant." }
+          "whenToUse": { "type": "string", "minLength": 4, "description": "The decision rule the agent should apply to pick this variant." }
         }
       }
     },
     "states": {
       "type": "array",
-      "description": "The interaction and status states the component must define. An agent that cannot see a state will not build it. Maps to agent-ready: state completeness.",
+      "minItems": 1,
+      "description": "The interaction and status states the component defines. An agent that cannot see a state will not build it. Maps to agent-ready: state completeness.",
       "items": {
         "type": "object",
         "required": ["name", "description"],
@@ -78,7 +93,7 @@
     "antiPatterns": {
       "type": "array",
       "minItems": 1,
-      "description": "Explicit refusals: what the agent must never do with this component. This is the conscience the agent cannot infer on its own. Maps to agent-ready: the refusals that keep generated UI honest.",
+      "description": "Explicit refusals: what the agent must never do with this component. This is the judgement the agent cannot infer on its own, and the part Figma cannot hold, so it comes from interviewing the designer. Maps to agent-ready: the refusals that keep generated UI honest.",
       "items": {
         "type": "object",
         "required": ["never", "because"],
@@ -110,16 +125,12 @@
     },
     "codeConnect": {
       "type": "object",
-      "description": "The bridge from this contract to the real implementation, and the mapping between described props and code props. Maps to agent-ready: the Code Connect bridge.",
-      "required": ["implementation", "propMap"],
+      "description": "Optional. The bridge from this contract to a real implementation in code, and the mapping between Figma props and code props. Maps to agent-ready: the Code Connect bridge.",
+      "required": ["implementation"],
       "properties": {
-        "implementation": { "type": "string", "description": "Path to the component source, e.g. './Button.tsx'." },
-        "propMap": { "type": "object", "description": "Contract prop name to code prop name.", "additionalProperties": { "type": "string" } }
+        "implementation": { "type": "string", "description": "Path or import for the component source, e.g. './Button.tsx' or '@acme/ui/Button'." },
+        "propMap": { "type": "object", "description": "Figma prop name to code prop name.", "additionalProperties": { "type": "string" } }
       }
-    },
-    "agentNotes": {
-      "type": "string",
-      "description": "Optional free-text guidance to the agent that does not fit the structured fields."
     }
   }
 }
