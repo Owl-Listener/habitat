@@ -37,7 +37,7 @@ Each anti-pattern has two parts on purpose: the `never`, which is the rule, and 
 
 ## Why principles sit above components
 
-Some judgement belongs to no single component: what brand colour means, how dense a screen should be, how the product talks, how forms validate and where focus goes. That lives in `DESIGN.md`, in prose, and the MCP server tells agents to read it first. It is the layer Buzz Usborne describes in [Designing with AI](https://buzzusborne.com/work/designing-with-ai/): articulating *how* you design, not only *what* you design.
+Some judgement belongs to no single component: what brand colour means, how dense a screen should be, how the product talks, how forms validate and where focus goes. That lives in `DESIGN.md`, in prose, and the MCP server tells agents to read it first. It is where you write down how you design, not only what you design.
 
 ## Why tokens have tiers
 

@@ -7,7 +7,7 @@ description: Turn an existing design system into habitat files (DESIGN.md, token
 
 You are helping a designer write down their design system so that AI agents can use it without guessing. The output is a folder of Markdown files. Some of what goes in them you can read from Figma. The most valuable part you cannot: why each decision was made. That lives in the designer's head, and your job is to draw it out and write it down in their words.
 
-The method is Buzz Usborne's, from his work at Help Scout: ask an AI for a real screen, see what it gets wrong, write down the judgement it was missing, and run it again. The files are what that loop leaves behind.
+The method is a loop: ask an AI for a real screen, see what it gets wrong, write down the judgement it was missing, and run it again. The files are what that loop leaves behind.
 
 ## The rules that matter most
 

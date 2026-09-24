@@ -16,7 +16,7 @@ Figma already knows what your system is made of: components, variants, propertie
 
 So habitat splits the work in two. **The AI reads the facts from Figma. You supply the reasons.** It interviews you for them, and it never makes one up. Anything it doesn't know stays marked `TODO`, and anything it guesses stays marked `TODO confirm:` until you agree.
 
-Then it tests the result. The method comes from Buzz Usborne's work at Help Scout, described in [Designing with AI](https://buzzusborne.com/work/designing-with-ai/). Ask an AI to build a real screen with no context, look at what it gets wrong, write down the missing rule, and run it again. Each pass exposes another piece of judgement the system needs, and the drop in problems tells you what your documentation is worth.
+Then it tests the result. Ask an AI to build a real screen with no context, look at what it gets wrong, write down the missing rule, and run it again. Each pass exposes another piece of judgement the system needs, and the drop in problems tells you what your documentation is worth.
 
 ## What you'll need
 
@@ -206,8 +206,8 @@ Put `npx github:Owl-Listener/habitat` in front of each one. When an agent is con
 
 I'd rather you knew this upfront.
 
-- **It can't tidy a messy source.** Buzz rebuilt more than 200 components and standardised hundreds of tokens before AI could use his system. habitat tells you what's wrong in Figma; [agent-ready](https://github.com/Owl-Listener/agent-ready) scores the structure and helps you fix it, but the fixing is still your work.
-- **It can't make Figma and code match.** Buzz's biggest finding was that without full parity, AI confidently builds screens that look right from components that don't exist. habitat finds the mismatches. Building the missing components and retiring the stale ones is design and engineering work. Its parity check also reads code as text, so treat what it finds as things to look at, not proof something is wrong.
+- **It can't tidy a messy source.** If your library is full of detached instances, hard-coded colours and inconsistent names, no amount of documentation will fully make up for it, and some teams find they have to restructure before AI can use their system well. habitat tells you what's wrong in Figma; [agent-ready](https://github.com/Owl-Listener/agent-ready) scores the structure and helps you fix it, but the fixing is still your work.
+- **It can't make Figma and code match.** When the two drift apart, AI confidently builds screens that look right from components that don't exist. habitat finds the mismatches. Building the missing components and retiring the stale ones is design and engineering work. Its parity check also reads code as text, so treat what it finds as things to look at, not proof something is wrong.
 - **It can't supply the judgement.** The interview draws out what your team already knows. It won't invent taste you haven't formed yet, and it won't try.
 
 Put together with agent-ready, the whole loop looks like this: fix the structure, write down the judgement, serve it to your agents, check the results, and keep it true as things change.
