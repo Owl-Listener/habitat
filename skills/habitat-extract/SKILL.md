@@ -111,7 +111,7 @@ For interaction rules, which span many components and are where accessibility us
 
 ## Step 5: Calibrate
 
-Re-run the baseline prompt, word for word, this time with the habitat files (through the MCP server, or by reading `design/`). Show the result and ask: "What's wrong with this?"
+Re-run the baseline prompt, word for word, this time with the habitat files (through the MCP server, or by reading `design/`). Show the result and ask: "What's wrong with this?" If you wrote code, also run `npx github:Owl-Listener/habitat check <files> --design design`: its count needs no judgement, so it is the most comparable number between runs. For a thorough critique, `/habitat-review` goes through every rule.
 
 For every problem the designer names, find the missing rule and add it to the right file: a component's `antiPatterns`, a variant's `whenToUse`, an interaction rule, or a principle in `DESIGN.md`. Record the run in a new `evals/` file with its problem count, and add a row to the calibration log in `DESIGN.md`. Run it again. Move on to the next core journey when the designer's corrections become matters of taste rather than rules.
 
@@ -120,8 +120,10 @@ The drop in problems, baseline to latest run, is the measure of what the documen
 ## Step 6: Check and hand over
 
 1. Run `npx github:Owl-Listener/habitat validate design` and fix any errors and warnings you can.
+   If the components exist in code, also run `npx github:Owl-Listener/habitat parity design --code <component folder>`. Missing implementations and components with no contract are what make an agent build screens that look right from parts that don't exist.
 2. Tell the designer how many TODOs remain and in which files. A file becomes `status: reviewed` (with `lastReviewed` set to the date) only when the designer says every field is right; never set it yourself.
 3. List the Figma issues you found: unbound values, naming inconsistencies, missing states, components with no code counterpart.
 4. Check that the always-on rules are in place (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/habitat.mdc`); `init` adds them.
 5. Show them how to serve the folder to their coding agent:
    `claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design`
+6. Tell them what comes next: `/habitat-review` to critique any screen against the system, and `/habitat-refresh` whenever the Figma library changes.

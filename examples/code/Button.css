@@ -80,7 +80,7 @@
   height: 1em;
   border: 2px solid currentColor;
   border-top-color: transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   animation: habitat-spin 600ms linear infinite;
 }
 

@@ -2,12 +2,13 @@
  * habitat MCP server
  *
  * Serves a design folder to a coding agent over MCP (stdio), so the agent
- * reads your system instead of guessing at it. Five tools:
+ * reads your system instead of guessing at it. Six tools:
  *   - get_principles  : DESIGN.md, the product-wide rules and taste
  *   - list_components : names + purposes of every component
  *   - get_component   : the full contract and notes for one component
  *   - get_tokens      : the tokens, with what each one means
  *   - get_rules       : every anti-pattern across the system, in one place
+ *   - check_code      : the automatic checks, so an agent can check its own work
  *
  * Files are re-read on every call, so edits show up without a restart.
  */
@@ -15,7 +16,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { resolve } from "node:path";
 import { loadDesign, findComponent } from "../lib/habitat.js";
+import { checkCode } from "../lib/check.js";
 
 const text = (value) => ({
   content: [{ type: "text", text: typeof value === "string" ? value : JSON.stringify(value, null, 2) }],
@@ -97,6 +100,23 @@ export async function serve(dir) {
           relationships: data?.relationships || {},
         }))
       )
+  );
+
+  server.registerTool(
+    "check_code",
+    {
+      description:
+        "Check UI code you have written against the design system before handing it over: raw colours and sizes instead of tokens, unknown tokens, native elements where the system has a component, and deprecated components. Fix what it finds, or explain why not.",
+      inputSchema: {
+        code: z.string().describe("The code to check: a component, a screen, or a stylesheet."),
+        filename: z.string().optional().describe("Its file name, e.g. 'InvoiceScreen.tsx' or 'invoice.css', so styles and markup are read correctly."),
+      },
+    },
+    async ({ code, filename = "snippet.tsx" }) => {
+      const findings = checkCode(loadDesign(dir), [{ path: resolve(filename), text: code }]);
+      if (!findings.length) return text("No problems found by the automatic checks. Rules about judgement still need a person or /habitat-review.");
+      return text(findings.map((f) => `line ${f.line}  ${f.rule}  ${f.message}`).join("\n"));
+    }
   );
 
   await server.connect(new StdioServerTransport());

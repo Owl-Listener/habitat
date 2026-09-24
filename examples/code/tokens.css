@@ -34,6 +34,7 @@
   /* radius */
   --radius-sm: 6px;
   --radius-md: 10px;
+  --radius-full: 999px;
 
   /* type */
   --type-family: system-ui, sans-serif;

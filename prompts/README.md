@@ -10,6 +10,13 @@ The same process as the Claude Code skill, as prompts you paste into any AI tool
 | [3-principles.md](3-principles.md) | `DESIGN.md` | Any existing principles or brand guidelines you have |
 | [4-calibrate.md](4-calibrate.md) | Sharper rules everywhere, and a before/after count | Everything above |
 
+And two you'll come back to:
+
+| Prompt | When | What it produces |
+| --- | --- | --- |
+| [review.md](review.md) | Any time you want a screen critiqued against your system | A report: problems with the rule each breaks, and gaps in the rules |
+| [refresh.md](refresh.md) | When your Figma library changes | Updated facts, and a list of decisions only you can make |
+
 This is Buzz Usborne's method from his work at Help Scout: ask an AI for a real screen, see what it gets wrong, write down the judgement it was missing, and run it again. Prompt 0 is the "before"; prompt 4 is the "after".
 
 **If your AI tool can connect to Figma** (through the Figma MCP server), it can read the file itself. **If it can't,** export your variables (in Figma, use a variables export plugin, or copy them from the Variables panel) and take screenshots of each component's variants and layer panel. The prompts work either way.

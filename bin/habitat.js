@@ -2,10 +2,13 @@
 /**
  * habitat command line.
  *
- *   habitat init [dir]              scaffold a design folder (default: ./design)
- *                                   and install the Claude Code skill
- *   habitat validate [dir] [--strict]   check the folder, list open TODOs
- *   habitat serve [dir]             serve the folder to an agent over MCP
+ *   habitat init [dir]                 scaffold a design folder (default: ./design),
+ *                                      install the skills and the agent rules
+ *   habitat validate [dir] [--strict]  check the folder, list open TODOs
+ *   habitat check <paths...> [--design dir]
+ *                                      check UI code against the system
+ *   habitat parity [dir] [--code path] check the contracts match the code
+ *   habitat serve [dir]                serve the folder to an agent over MCP
  *
  * Run it without installing anything:
  *   npx github:Owl-Listener/habitat init
@@ -16,10 +19,29 @@ import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const kit = fileURLToPath(new URL("..", import.meta.url));
-const [command, ...rest] = process.argv.slice(2);
-const strict = rest.includes("--strict");
-const dir = resolve(rest.find((a) => !a.startsWith("--")) || "design");
+const [command, ...args] = process.argv.slice(2);
+
+// Split the arguments into flags (--strict, --code path) and plain paths.
+const flags = {};
+const paths = [];
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === "--strict") flags.strict = true;
+  else if (args[i].startsWith("--")) flags[args[i].slice(2)] = args[++i];
+  else paths.push(args[i]);
+}
+const dir = resolve((command === "check" ? flags.design : paths[0]) || "design");
 const shortDir = relative(process.cwd(), dir) || ".";
+const SKILLS = ["habitat-extract", "habitat-review", "habitat-refresh"];
+
+// A mistyped path should say so plainly, not crash with a stack trace.
+function mustExist(...ps) {
+  for (const p of ps) {
+    if (!existsSync(p)) {
+      console.log(`habitat: ${p} not found`);
+      process.exit(1);
+    }
+  }
+}
 
 // Copy a file only if it is not already there, so re-running init never
 // overwrites work someone has already done.
@@ -61,7 +83,7 @@ switch (command) {
     place("templates/tokens.md", join(dir, "tokens.md"));
     place("templates/component.md", join(dir, "components", "_TEMPLATE.md"));
     place("templates/eval.md", join(dir, "evals", "_TEMPLATE.md"));
-    place("skills/habitat-extract/SKILL.md", resolve(".claude/skills/habitat-extract/SKILL.md"));
+    for (const skill of SKILLS) place(`skills/${skill}/SKILL.md`, resolve(`.claude/skills/${skill}/SKILL.md`));
     // AGENTS.md is read by Cursor, Codex and others. Claude Code reads
     // CLAUDE.md, which can pull AGENTS.md in with an @ import.
     addRules(resolve("AGENTS.md"));
@@ -82,12 +104,37 @@ Next:
      https://github.com/Owl-Listener/habitat/tree/main/prompts
   3. Check your progress:  npx github:Owl-Listener/habitat validate ${shortDir}
   4. Serve it to your agent:
-     claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve ${shortDir}`);
+     claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve ${shortDir}
+  5. Later: /habitat-review to critique a screen, /habitat-refresh when Figma changes.`);
     break;
   }
   case "validate": {
     const { validate } = await import("../lib/validate.js");
-    process.exit(validate(dir, { strict }) ? 0 : 1);
+    process.exit(validate(dir, { strict: flags.strict }) ? 0 : 1);
+  }
+  case "check": {
+    if (!paths.length) {
+      console.log("Usage: habitat check <files or folders...> [--design dir]");
+      process.exit(1);
+    }
+    mustExist(dir, ...paths);
+    const { loadDesign } = await import("../lib/habitat.js");
+    const { checkCode, collectFiles } = await import("../lib/check.js");
+    const files = collectFiles(paths);
+    const findings = checkCode(loadDesign(dir), files);
+    for (const f of findings) console.log(`${relative(process.cwd(), f.path)}:${f.line}  ${f.rule.padEnd(13)} ${f.message}`);
+    const counts = {};
+    for (const f of findings) counts[f.rule] = (counts[f.rule] || 0) + 1;
+    const byRule = Object.entries(counts).map(([rule, n]) => `${rule} ${n}`);
+    console.log(`\n${files.length} file(s) checked, ${findings.length} problem(s)${byRule.length ? ` (${byRule.join(", ")})` : ""}.`);
+    process.exit(findings.length ? 1 : 0);
+  }
+  case "parity": {
+    const { loadDesign } = await import("../lib/habitat.js");
+    const { parity, printParity } = await import("../lib/parity.js");
+    const codePaths = flags.code ? [flags.code] : [];
+    mustExist(dir, ...codePaths);
+    process.exit(printParity(parity(loadDesign(dir), { codePaths }), { codePaths }) ? 0 : 1);
   }
   case "serve": {
     const { serve } = await import("../mcp-server/index.js");
@@ -97,8 +144,10 @@ Next:
   default:
     console.log(`habitat: make your design system legible to AI agents
 
-  habitat init [dir]                  scaffold a design folder (default ./design)
-  habitat validate [dir] [--strict]   check it and list open TODOs
-  habitat serve [dir]                 serve it to an agent over MCP`);
+  habitat init [dir]                        scaffold a design folder (default ./design)
+  habitat validate [dir] [--strict]         check it and list open TODOs
+  habitat check <paths...> [--design dir]   check UI code against the system
+  habitat parity [dir] [--code path]        check the contracts match the code
+  habitat serve [dir]                       serve it to an agent over MCP`);
     process.exit(command ? 1 : 0);
 }

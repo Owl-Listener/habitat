@@ -20,10 +20,8 @@ jobs:
       - name: The worked example is complete and valid
         run: npm run validate
 
-      - name: Freshly scaffolded templates are valid drafts
-        run: |
-          cd "$(mktemp -d)"
-          node "$GITHUB_WORKSPACE/bin/habitat.js" init
-          # _TEMPLATE.md is skipped by design, so check a copy of it too.
-          cp design/components/_TEMPLATE.md design/components/example.md
-          node "$GITHUB_WORKSPACE/bin/habitat.js" validate design
+      - name: The example code passes its own design system's checks
+        run: npm run check
+
+      - name: Tests (init, validate, check, parity, MCP server)
+        run: npm test

@@ -13,4 +13,6 @@ Then I'll tell you what's wrong. For each problem:
 2. Write it into the right place: a component's `antiPatterns` or `whenToUse`, an interaction rule, or a principle in `DESIGN.md`. Include the `because`, and the `source` for anti-patterns.
 3. Add a row to the calibration log in `DESIGN.md`: date, what you did, the rule we added.
 
+(If you wrote code, I'll also run `npx github:Owl-Listener/habitat check <files> --design design` and paste the result, so the eval has an automatic count too.)
+
 Give me this run as a new eval file (same template as the baseline), with its problem count next to the baseline's. Then run it again. We'll stop when my corrections are about taste rather than rules, and move on to the next journey.

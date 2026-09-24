@@ -15,3 +15,4 @@ Always:
 - Never use a deprecated component or token; use its `replacedBy`.
 - Follow every `never … because …` rule. If a rule seems to block the task, ask rather than work around it.
 - When the files do not say what to do, say so instead of quietly choosing.
+- Before handing over UI code, check it with the `check_code` tool (or `npx github:Owl-Listener/habitat check <files> --design {{DIR}}`) and fix what it finds.

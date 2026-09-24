@@ -17,7 +17,9 @@
   ],
   "scripts": {
     "validate": "node bin/habitat.js validate examples/design --strict",
-    "serve": "node bin/habitat.js serve examples/design"
+    "serve": "node bin/habitat.js serve examples/design",
+    "test": "node --test test/habitat.test.js",
+    "check": "node bin/habitat.js check examples/code --design examples/design"
   },
   "license": "MIT",
   "dependencies": {

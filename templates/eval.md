@@ -25,3 +25,5 @@ TODO a screenshot, a link, or a short description of the screen.
 | 1 | TODO e.g. "Two primary buttons" | TODO invented component / raw value / wrong component / broke a principle / other | TODO e.g. "one primary per view (DESIGN.md)" |
 
 **Total problems:** TODO
+
+**Automatic check:** TODO if the AI wrote code, the last line of `habitat check <files> --design design`, e.g. "7 problem(s) (raw-colour 3, raw-size 2, raw-element 2)". This part of the count needs no judgement, so it is the most comparable between runs.

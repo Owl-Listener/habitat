@@ -81,7 +81,26 @@ This checks every file and lists every open TODO. It warns when a component bind
 claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design
 ```
 
-For other agents, add a stdio MCP server that runs `npx -y github:Owl-Listener/habitat serve design`. The agent gets five tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens` and `get_rules`. Asking for a deprecated component returns a warning and its replacement.
+For other agents, add a stdio MCP server that runs `npx -y github:Owl-Listener/habitat serve design`. The agent gets six tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, and `check_code` to check its own work before handing it over. Asking for a deprecated component returns a warning and its replacement.
+
+### 6. Keep it true
+
+A design system keeps changing, and documentation that no longer matches it is worse for an agent than none.
+
+- **Check code against the system.** `habitat check` finds what a program can: raw colours and sizes (and the token with that value), unknown tokens, native elements where your system has a component, and deprecated components, each with file and line. Run it on a screen an AI built to get a problem count for your evals, or in CI.
+
+  ```bash
+  npx github:Owl-Listener/habitat check src/screens --design design
+  ```
+
+- **Check the contracts match the code.** `habitat parity` checks that every contract's implementation exists and has the props and options the contract promises, and lists components in code that have no contract.
+
+  ```bash
+  npx github:Owl-Listener/habitat parity design --code src/components
+  ```
+
+- **Review a screen.** `/habitat-review` (or the [review prompt](prompts/review.md)) critiques a screen, Figma frame or pull request against your rules, citing the rule for every problem, and turns anything no rule covers into a proposed new rule.
+- **Refresh after Figma changes.** `/habitat-refresh` (or the [refresh prompt](prompts/refresh.md)) re-reads Figma, updates the facts, never touches your reasons, and gives you a short list of the decisions the change needs from you.
 
 ## What habitat can and can't do for you
 
@@ -92,28 +111,30 @@ Buzz's work at Help Scout had two halves. habitat covers the first fully and the
 - Read the facts out of Figma instead of retyping them.
 - Test the documentation with before-and-after evals on your own journeys.
 - Make every agent read it, through the always-on rules and the MCP server.
-- Keep it honest over time, with owners, review dates and deprecations.
+- Keep it honest over time, with owners, review dates, deprecations, and a refresh that catches drift from Figma.
+- Check the work: automatic checks on code, a parity check between contracts and code, and a review skill for everything that needs judgement.
 
 **It can't do for you:**
 - **Fix a messy source.** Buzz rebuilt 200+ components and standardised hundreds of tokens before AI could use his system. habitat reports what's wrong in Figma; run [agent-ready](https://github.com/Owl-Listener/agent-ready) to score and fix the structure itself.
-- **Match Figma and code yet.** Buzz's biggest finding: without full parity between Figma and code, AI confidently builds screens that look right from components that don't exist. habitat records where each component lives in code, but doesn't check parity yet. That, a screen-review skill, and a refresh that re-reads Figma to catch drift are next on the roadmap.
+- **Make Figma and code match.** Buzz's biggest finding: without full parity between Figma and code, AI confidently builds screens that look right from components that don't exist. habitat *finds* the mismatches (`habitat parity` for contracts and code, `/habitat-refresh` for Figma), but closing them is design and engineering work: building the missing components, deprecating the stale ones. Its parity check reads code as text, not as a compiler, so it points you at things to check rather than proving they are wrong.
 - **Supply the judgement.** The interview draws out what your team knows. It can't invent taste you haven't formed yet, and it won't try.
 
-The story across the two repos: **fix the structure** (agent-ready) → **write down the judgement** (habitat) → **serve it** (MCP) → **check it** (evals).
+The story across the two repos: **fix the structure** (agent-ready) → **write down the judgement** (habitat) → **serve it** (MCP) → **check it** (evals, `check`, `parity`, review) → **keep it true** (refresh).
 
 ## What's in this repo
 
 ```
 habitat/
 ├── templates/            blank DESIGN.md, tokens.md, component.md, eval.md and the agent rules
-├── skills/habitat-extract/   the Claude Code skill that runs the extraction
+├── skills/               Claude Code skills: habitat-extract, habitat-review, habitat-refresh
 ├── prompts/              the same process as copy-paste prompts, for any AI
 ├── schema/               what a valid component and tokens file look like
-├── bin/ lib/             the command line: init, validate, serve
+├── bin/ lib/             the command line: init, validate, check, parity, serve
 ├── mcp-server/           serves a design folder to an agent over MCP
 ├── examples/
 │   ├── design/           a finished design folder for an imaginary product, with evals
 │   └── code/             the Button and Input it describes, in React
+├── test/                 tests for the command line and the MCP server
 └── docs/intent-spec.md   every contract field, why it exists, and where its answer comes from
 ```
 
@@ -129,7 +150,7 @@ Every field in the contract exists because an agent needs it, and maps to one of
 
 ## Contributing
 
-Fork it, break it, make it better. Run `npm run validate` before you open a PR.
+Fork it, break it, make it better. Run `npm test` before you open a PR.
 
 ## License
 

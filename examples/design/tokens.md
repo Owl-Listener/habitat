@@ -107,6 +107,10 @@ tokens:
     tier: semantic
     value: 10px
     meaning: 'Corner radius for containers: cards, dialogs.'
+  - name: radius.full
+    tier: semantic
+    value: 999px
+    meaning: Fully round corners, for pills and circular indicators such as spinners.
   - name: type.family
     tier: semantic
     value: 'system-ui, sans-serif'
