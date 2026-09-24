@@ -95,7 +95,7 @@ designer asks you in their first month.
 ## Calibration log
 
 <!--
-Buzz Usborne's loop: ask the AI to build a real screen with these files, look
+The loop: ask the AI to build a real screen with these files, look
 at what it got wrong, and write down the rule it was missing. Then run it
 again. Each entry here is a lesson the system learned the hard way.
 -->

@@ -3,10 +3,10 @@
 <!--
 One file per run, e.g. evals/2026-09-24-send-invoice-baseline.md.
 
-This is Buzz Usborne's method: ask the AI for a real screen, see what it gets
-wrong, write down the missing rule, run it again. The first run happens BEFORE
-any habitat files exist (the baseline), so you can see what your documentation
-changes. Use the same prompt every time, so runs are comparable.
+The method: ask the AI for a real screen, see what it gets wrong, write down
+the missing rule, run it again. The first run happens before any habitat
+files exist (the baseline), so you can see what your documentation changes.
+Use the same prompt every time, so runs are comparable.
 -->
 
 - **Journey:** TODO e.g. "Send an invoice"
