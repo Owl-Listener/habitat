@@ -37,11 +37,21 @@ Ask which core journey it belongs to, if that is not obvious. The journey tells 
 
 ## Step 3: Automatic checks
 
-For code, run `npx @owl-listener/habitat check <paths> --design design` (or call the `check_code` MCP tool). It finds raw colours and sizes, unknown tokens, native elements where the system has a component, and deprecated components, with file and line. Include its findings in the report; do not repeat the work by eye.
+For code, run `npx @owl-listener/habitat check <paths> --design design` (or call the `check_code` MCP tool). It finds raw colours and sizes, unknown tokens, native elements where the system has a component, and deprecated components, with file, line and column. Where exactly one token fits, it gives the fix; `--fix` applies those. Include its findings in the report; do not repeat the work by eye.
 
 For a Figma frame, check the equivalent by reading the frame: fills and spacing not bound to variables, detached instances, and layers drawn by hand where the library has a component.
 
-## Step 4: Judgement checks
+## Step 4: Find it before you build it
+
+For everything the screen hand-builds or styles itself (a custom card, a home-made date field, a styled div acting as a button), look for an existing component before calling it a gap:
+
+1. `list_components` (or `components/`), by name and alias.
+2. If the project has them connected, the component library's own sources: Storybook MCP for stories and props, the shadcn MCP for registry components.
+3. The Figma library, with `search_design_system`.
+
+If one exists, the problem is "rebuilt X instead of using it", and the fix names the component. If it exists in code or Figma but has no habitat file, say so: an undocumented component is one an agent will miss again. Only when nothing exists is it a gap in the system.
+
+## Step 5: Judgement checks
 
 Go through the screen against each of these, citing rules:
 
@@ -54,7 +64,7 @@ Go through the screen against each of these, citing rules:
 - **Content:** labels and messages against "Language and voice": verbs on buttons, what-happened-and-how-to-fix errors, banned words, no lorem ipsum.
 - **The people it is for:** does the screen suit the situation and state of mind the research describes? A screen can follow every rule and still ask too much of someone tired at the end of the day.
 
-## Step 5: The report
+## Step 6: The report
 
 ```markdown
 # Review: <screen>, <date>

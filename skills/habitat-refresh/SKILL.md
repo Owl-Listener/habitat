@@ -37,6 +37,8 @@ If a `nodeId` no longer exists, search for the component by name; if it is gone,
 
 ## Step 3: Compare with code
 
+If the project's component library has a Storybook with the Storybook MCP addon, or a shadcn registry with the shadcn MCP, read it too: it is a second source of facts about what exists in code and which props it takes, and it often shows components that Figma does not. Treat a disagreement between Storybook, Figma and the habitat file as a fact to report, never as a reason to change judgement.
+
 Run `npx @owl-listener/habitat parity design --code <the component folder>`. It reports contracts whose implementation is missing, props and options that are not in the code, and components in code with no contract. Ask the designer where the component code lives if you do not know.
 
 ## Step 4: Update the facts

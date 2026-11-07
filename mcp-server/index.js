@@ -183,7 +183,8 @@ export async function serve(dir) {
     async ({ code, filename = "snippet.tsx" }) => {
       const findings = checkCode(loadDesign(dir), [{ path: resolve(filename), text: code }]);
       if (!findings.length) return text("No problems found by the automatic checks. Rules about judgement still need a person or /habitat-review.");
-      return text(findings.map((f) => `line ${f.line}  ${f.rule}  ${f.message}`).join("\n"));
+      const lines = findings.map((f) => `line ${f.line}, column ${f.column + 1}  ${f.rule}  ${f.message}${f.fix ? `  fix: replace with ${f.fix.replacement}` : ""}`);
+      return text(`${lines.join("\n")}\n\nApply each fix given. Where none is given, choose the token or component by its meaning, or ask.`);
     }
   );
 

@@ -166,7 +166,8 @@ The walkthrough above, as a list you can work through on your own design system.
 - [ ] **When Figma changes**, run `/habitat-refresh` and answer the decisions it lists.
 - [ ] **When you review a screen or pull request**, run `/habitat-review`, and adopt the proposed rules you agree with.
 - [ ] **When new research lands**, add it with `/habitat-research`, and retire the findings it replaces.
-- [ ] **Every so often**, run `validate` to catch files nobody has reviewed in six months and research more than a year old. You can also add `validate --strict` and `check` to your CI.
+- [ ] **Every so often**, run `validate` to catch files nobody has reviewed in six months and research more than a year old. You can also add `validate --strict` to your CI.
+- [ ] **Optional: check every pull request.** Add the habitat GitHub Action or the ESLint plugin (see [In pull requests and your editor](#in-pull-requests-and-your-editor)). Done when a pull request with a hard-coded colour gets a comment on that line.
 
 ### If you only have an afternoon
 
@@ -200,10 +201,11 @@ Each component file opens with a structured contract: what it's for, when to use
 | --- | --- |
 | `habitat init [folder]` | Sets up a design folder (`design` by default), the skills and the always-on rules |
 | `habitat validate [folder]` | Checks every file, lists open TODOs, and warns about stale files, missing tokens and broken references. Add `--strict` in CI to fail while any TODO remains |
-| `habitat check <files> --design <folder>` | Checks code for hard-coded colours and sizes, invented tokens, retired components, and native elements where your system has a component, with file and line |
+| `habitat check <files> --design <folder>` | Checks code for hard-coded colours and sizes, invented tokens, retired components, and native elements where your system has a component, with file, line and the fix where there's one right answer. `--fix` applies those fixes, `--changed-since origin/main` keeps to the lines you changed, and `--format github` annotates a pull request |
 | `habitat parity [folder] --code <folder>` | Reads your component code and checks each documented component exists with the props, values and defaults it promises; lists props and code components nobody documented |
 | `habitat tokens import <files> --design <folder>` | Brings W3C design tokens JSON (one file per mode) into `tokens.md`: updates values, never meanings. Add `--dry-run` to see the changes first |
 | `habitat tokens export [folder]` | Writes your tokens, meanings included, as W3C design tokens JSON for other tools |
+| `habitat export [folder]` | Writes a `DESIGN.md` in [Google's open format](https://github.com/google-labs-code/design.md), so tools that read that format get your tokens, components and rules too. Add `--name` for your product's name |
 | `habitat eval [folder] --prompt "…"` | Runs the prompt with and without your design system, counts the problems, and writes a report to `evals/`. Add `--judge` for a review against your rules, `--dry-run` to see the plan. Needs an Anthropic API key |
 | `habitat serve [folder]` | Serves your design folder to a coding agent over MCP |
 
@@ -217,6 +219,48 @@ Put `npx @owl-listener/habitat` in front of each one. When an agent is connected
 | `/habitat-research` | [research.md](prompts/research.md) | When you have user research to bring in |
 | `/habitat-review` | [review.md](prompts/review.md) | Whenever you want a screen critiqued against your rules |
 | `/habitat-refresh` | [refresh.md](prompts/refresh.md) | When your Figma library changes |
+
+## In pull requests and your editor
+
+You don't have to remember to run `check`. Two ways to have it run for you:
+
+**On every pull request.** Add this to a workflow in `.github/workflows/`, and problems show up as comments on the lines the pull request changed. Old code doesn't block new work.
+
+```yaml
+on: pull_request
+jobs:
+  design-system:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Owl-Listener/habitat@main
+        with:
+          paths: src
+          design: design
+```
+
+**In your editor, and in the linting you already run.** habitat comes with an ESLint plugin that runs the same checks as you type, and `eslint --fix` applies the same safe fixes. In `eslint.config.js`:
+
+```js
+import habitat from "@owl-listener/habitat/eslint";
+
+export default [
+  habitat.configs.recommended, // reads ./design
+];
+```
+
+For another folder: `{ plugins: { habitat }, rules: { "habitat/design-system": ["warn", { design: "src/design" }] } }`.
+
+A fix is only ever automatic when there's exactly one right answer: a raw value that matches one token of the right kind (a spacing token on `padding`, a text colour on `color`). Swapping a hand-built button for your Button component is always left to a person, because the props differ.
+
+## Habitat and the tools you already use
+
+Habitat is the judgement layer. It works best next to the tools that hold your facts, rather than instead of them.
+
+- **[Figma's MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server)** is where the facts come from. Figma also offers a skill that writes design system rules from your codebase's conventions. Habitat's rules come from your team's reasons, and the two sit happily side by side.
+- **[Storybook's MCP addon](https://storybook.js.org/blog/storybook-mcp-for-react/)** and the **shadcn MCP** tell an agent which components exist in code and which props they take. Connect them alongside habitat: they say what a component is, habitat says when to use it and what never to do with it. The extract, review and refresh skills use them when they're connected.
+- **[DESIGN.md](https://github.com/google-labs-code/design.md)** is Google's open format for describing a design system in one file, popularised by collections like [awesome-design-md](https://github.com/VoltAgent/design-md). Those files capture how a product looks; habitat captures why. `habitat export` writes your system in that format, so you can use both.
+- **W3C design tokens.** `habitat tokens import` and `export` speak the format Figma's variable export, Tokens Studio and Style Dictionary share.
 
 ## What habitat can't do for you
 
@@ -243,6 +287,7 @@ habitat/
 │   └── code/           the Button and Input it describes, in React
 ├── test/               tests for the command and the MCP server
 ├── .github/workflows/  validation on every push, and publishing to npm on each release
+├── action.yml          the GitHub Action that checks pull requests
 └── docs/intent-spec.md every field in the contract, why it exists, and where its answer comes from
 ```
 
@@ -250,6 +295,8 @@ habitat/
 
 - [agent-ready](https://github.com/Owl-Listener/agent-ready) scores how legible your Figma file is to an agent. Every field in a habitat contract maps to one of its checks, so the two define the same standard from two directions.
 - [designer-skills](https://github.com/Owl-Listener/designer-skills) is the judgement of a design team, written down as agent skills.
+- [DESIGN.md](https://github.com/google-labs-code/design.md) by Google Labs is an open, single-file format for design systems. habitat can export to it.
+- [design-system-mcp](https://glama.ai/mcp/servers/dgesteves/design-system-mcp) serves a React design system's components and tokens to agents, with a linter whose fix-it suggestions inspired habitat's.
 - [Design System Contracts](https://github.com/southleft/ds-contracts-poc) by Southleft generates matching React and Figma libraries from machine-readable contracts. It captures structure where habitat captures judgement, and the two fit together well. Their with-and-without test is a good model for your own evals, the same model scored 100 with contracts and 69 without.
 
 ## Further reading

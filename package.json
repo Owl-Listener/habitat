@@ -6,6 +6,10 @@
   "bin": {
     "habitat": "bin/habitat.js"
   },
+  "exports": {
+    "./eslint": "./lib/eslint.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "bin",
     "lib",
@@ -57,5 +61,18 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@google/design.md": "^0.4.0",
+    "@typescript-eslint/parser": "^8.72.1",
+    "eslint": "^9.39.5"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    }
   }
 }

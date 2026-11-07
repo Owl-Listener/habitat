@@ -43,8 +43,10 @@ Read the templates in `design/` before writing, and follow their field names exa
 
 1. Ask for the Figma file link (the library file where the components and variables live).
 2. Check that you have the Figma MCP tools (their names include `figma`, e.g. `get_metadata`, `get_variable_defs`, `get_design_context`, `get_screenshot`, `search_design_system`, `use_figma`). If not, tell the designer how to connect the Figma MCP server to their AI tool and stop there, or offer to continue from screenshots and exports they paste in.
-3. Ask: **"Which two or three user journeys matter most in your product?"** For example, "send an invoice" or "invite a teammate". Write them into the Core journeys section of `DESIGN.md`. They decide which components to document first, and they are what the evals test. Starting from journeys rather than a list of components keeps the work small and tied to real screens.
-4. Ask whether the team has user research. If it does, suggest running `/habitat-research` after this extraction (or before, if the research is fresh), so the rules you write can cite the evidence behind them.
+   If the Figma file is too messy to trust, or there isn't one, offer to start from the live product instead: screenshots of real screens, or the site's URL if you can read it. Read the colours, type, spacing and components from what ships, mark everything you infer as `TODO confirm:`, and say plainly that the source is the product, not the library. The interview is the same either way.
+3. If the project also has Storybook (with the Storybook MCP addon) or a shadcn registry (with the shadcn MCP), use them alongside Figma: they say what exists in code and which props it really takes.
+4. Ask: **"Which two or three user journeys matter most in your product?"** For example, "send an invoice" or "invite a teammate". Write them into the Core journeys section of `DESIGN.md`. They decide which components to document first, and they are what the evals test. Starting from journeys rather than a list of components keeps the work small and tied to real screens.
+5. Ask whether the team has user research. If it does, suggest running `/habitat-research` after this extraction (or before, if the research is fresh), so the rules you write can cite the evidence behind them.
 
 ## Step 1: Baseline eval
 

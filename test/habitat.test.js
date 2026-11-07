@@ -75,8 +75,10 @@ test("validate warns about bad token bindings, stale files and broken replacemen
 test("check finds every kind of problem in a badly built screen", () => {
   const r = habitat(["check", "test/fixtures/bad-screen.tsx", "--design", example]);
   assert.ok(!r.ok);
-  assert.match(r.out, /raw colour #16201f; the same value as color.text.default or color.border.strong/);
-  assert.match(r.out, /raw size 24px; the same value as space.xl/);
+  // The property narrows which token is meant: "color" wants a text colour.
+  assert.match(r.out, /raw colour #16201f; use color.text.default: var\(--color-text-default\)  \(fixable\)/);
+  assert.match(r.out, /raw colour rgb\(31, 111, 107\); use color.brand.default/);
+  assert.match(r.out, /raw size 24px; use space.xl/);
   assert.match(r.out, /native <input> used; the system has Input/);
   assert.match(r.out, /native <button> used; the system has Button/);
   assert.match(r.out, /--space-huge is not a token/);
@@ -307,4 +309,77 @@ test("validate checks research: citations, retired and hunch evidence, stale fin
   assert.match(r.out, /seems to contain an email address/);
   assert.match(r.out, /evidence cites INS-050/);
   assert.doesNotMatch(r.out, /phone number/, "dates and counts are not phone numbers");
+});
+
+test("the ESLint plugin reports the same problems, and --fix applies only safe fixes", async () => {
+  const { ESLint } = await import("eslint");
+  const tsParser = (await import("@typescript-eslint/parser")).default;
+  const habitat = (await import("@owl-listener/habitat/eslint")).default;
+  const eslint = new ESLint({
+    cwd: kit,
+    overrideConfigFile: true,
+    fix: true,
+    overrideConfig: [
+      { files: ["**/*.tsx"], languageOptions: { parser: tsParser, parserOptions: { ecmaFeatures: { jsx: true } } } },
+      { plugins: { habitat }, rules: { "habitat/design-system": ["warn", { design: "examples/design" }] } },
+    ],
+  });
+  const [result] = await eslint.lintFiles(["test/fixtures/bad-screen.tsx"]);
+  // Three fixable values were fixed; what is left needs a person.
+  assert.match(result.output, /padding: "var\(--space-xl\)", color: "var\(--color-text-default\)"/);
+  assert.match(result.output, /background: "var\(--color-brand-default\)"/);
+  const left = result.messages.map((m) => m.message.match(/\((\S+)\)$/)[1]).sort();
+  assert.deepEqual(left, ["raw-element", "raw-element", "unknown-token"]);
+  assert.equal(habitat.configs.recommended.rules["habitat/design-system"], "warn");
+});
+
+test("check --fix rewrites values with one right token, and --changed-since keeps to changed lines", () => {
+  const dir = scratch();
+  cpSync(example, join(dir, "design"), { recursive: true });
+  writeFileSync(join(dir, "a.css"), ".a { padding: 16px; color: #16201f; }\n.b { background: #1f6f6b; }\n");
+  const fixed = habitat(["check", "a.css", "--fix"], dir);
+  assert.match(fixed.out, /Fixed 3 problem\(s\)/);
+  assert.equal(readFileSync(join(dir, "a.css"), "utf8"), ".a { padding: var(--space-lg); color: var(--color-text-default); }\n.b { background: var(--color-brand-default); }\n");
+
+  const git = (...args) => spawnSync("git", args, { cwd: dir, encoding: "utf8" });
+  git("init", "-q");
+  git("-c", "user.email=t@example.com", "-c", "user.name=t", "add", ".");
+  git("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "base");
+  writeFileSync(join(dir, "a.css"), readFileSync(join(dir, "a.css"), "utf8") + ".c { margin: 24px; }\n");
+  writeFileSync(join(dir, "a.css"), readFileSync(join(dir, "a.css"), "utf8").replace("var(--space-lg)", "16px"));
+  const r = habitat(["check", "a.css", "--changed-since", "HEAD", "--format", "github"], dir);
+  assert.match(r.out, /::warning file=a.css,line=1,col=\d+,title=habitat raw-size::raw size 16px/);
+  assert.match(r.out, /::warning file=a.css,line=3,/);
+  assert.match(r.out, /2 problem\(s\)/);
+});
+
+test("export writes a DESIGN.md in Google's format, and never overwrites a hand-written one", async () => {
+  const dir = scratch();
+  const r = habitat(["export", example, "--name", "Ledger"], dir);
+  assert.ok(r.ok, r.out);
+  const text = readFileSync(join(dir, "DESIGN.md"), "utf8");
+  const YAML = (await import("yaml")).default;
+  const front = YAML.parse(text.split("---\n")[1]);
+  assert.equal(front.name, "Ledger");
+  assert.equal(front.colors.primary, "#1f6f6b");
+  assert.equal(front.spacing.lg, "16px");
+  assert.equal(front.typography.heading.fontWeight, 600);
+  assert.equal(front.components["button-primary"].backgroundColor, "{colors.brand-default}");
+  // Sections in the format's order, then habitat's extras.
+  const headings = [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  assert.deepEqual(headings.slice(0, 6), ["Overview", "Colors", "Typography", "Layout", "Shapes", "Components"]);
+  assert.match(text, /\*\*Don't\*\* place two primary buttons in the same view \(Button\)/);
+  // Every {reference} points at a token that exists.
+  for (const [, group, key] of text.matchAll(/"\{(\w+)\.([\w-]+)\}"/g)) assert.ok(front[group]?.[key] !== undefined, `${group}.${key}`);
+
+  // Google's own linter accepts it: no errors, and no section-order or unknown-key warnings.
+  const { lint } = await import("@google/design.md/linter");
+  const { findings, summary } = lint(text);
+  assert.equal(summary.errors, 0, JSON.stringify(findings));
+  assert.ok(!findings.some((f) => ["section-order", "unknown-key", "token-like-ignored", "missing-primary"].includes(f.rule)), JSON.stringify(findings));
+
+  assert.ok(habitat(["export", example], dir).ok, "a file habitat wrote can be replaced");
+  writeFileSync(join(dir, "DESIGN.md"), "# Written by hand\n");
+  assert.match(habitat(["export", example], dir).out, /was not made by habitat/);
+  assert.match(habitat(["export", example, "--out", join(example, "DESIGN.md")]).out, /habitat's own file/);
 });
