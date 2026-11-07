@@ -11,6 +11,10 @@
 #   component  a value for one component only (button.primary.background)
 # Only semantic and component tokens need useFor and avoid.
 #
+# Libraries that still use Figma styles (colour, text and effect styles)
+# can list them here too: give the token a figma.style and figma.styleType.
+# A text or shadow style has an object as its value (see the example below).
+#
 # Set status to "reviewed" (and add lastReviewed) once a person has checked
 # every token. Mark a retired token with replacedBy.
 kind: tokens
@@ -30,6 +34,19 @@ tokens:
     meaning: TODO what this colour is for, in one sentence
     useFor: TODO where to reach for it
     avoid: TODO where it must not go, and why
+  # A Figma text style. Delete this if your library has none.
+  - name: type.style.heading
+    tier: semantic
+    type: typography
+    value:
+      fontFamily: TODO
+      fontSize: TODO
+      fontWeight: TODO
+      lineHeight: TODO
+    figma:
+      style: TODO e.g. Heading/Medium
+      styleType: TEXT
+    meaning: TODO what this style is for
 ---
 
 # Tokens

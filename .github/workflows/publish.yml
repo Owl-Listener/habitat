@@ -1,0 +1,49 @@
+name: Publish to npm
+
+# Runs when you publish a release on GitHub (Releases → Draft a new release).
+# Tag the release with the version in package.json, e.g. v0.3.0.
+#
+# It publishes with npm's trusted publishing, so no npm token needs to be
+# stored in GitHub. One-time setup on npmjs.com, after the first publish:
+# the package's Settings → Trusted publishing → GitHub Actions, with this
+# repository and the workflow file name publish.yml.
+# Until then, add an npm automation token as the NPM_TOKEN repository secret.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write # lets npm verify the package was built here (provenance)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs a recent npm.
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - name: The release tag matches package.json
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "The release tag is ${GITHUB_REF_NAME} but package.json says $version"
+            exit 1
+          fi
+
+      - run: npm run validate
+      - run: npm test
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -7,6 +7,7 @@ The same process as the Claude Code skill, as prompts you paste into any AI tool
 | [0-baseline.md](0-baseline.md) | Your core journeys, and `evals/…-baseline.md` | Nothing yet: this shows what the AI does without help |
 | [1-tokens.md](1-tokens.md) | `tokens.md` | Figma access, or your exported variables (JSON) |
 | [2-component.md](2-component.md) | `components/<name>.md` | Figma access, or screenshots of the component, its variants and its layers |
+| [2b-flow.md](2b-flow.md) | `flows/<journey>.md` | Figma access, or screenshots of the prototype with its connections showing |
 | [3-principles.md](3-principles.md) | `DESIGN.md` | Any existing principles or brand guidelines you have |
 | [4-calibrate.md](4-calibrate.md) | Sharper rules everywhere, and a before/after count | Everything above |
 
@@ -20,12 +21,12 @@ And three you'll come back to:
 
 The method is a loop: ask an AI for a real screen, see what it gets wrong, write down the judgement it was missing, and run it again. Prompt 0 is the "before"; prompt 4 is the "after".
 
-**If your AI tool can connect to Figma** (through the Figma MCP server), it can read the file itself. **If it can't,** export your variables (in Figma, use a variables export plugin, or copy them from the Variables panel) and take screenshots of each component's variants and layer panel. The prompts work either way.
+**If your AI tool can connect to Figma** (through the Figma MCP server), it can read the file itself. **If it can't,** export your variables (in Figma, use a variables export plugin, or copy them from the Variables panel), take screenshots of each component's variants and layer panel, and take screenshots of your prototype with the connection arrows showing. If your export is W3C design tokens JSON, `npx @owl-listener/habitat tokens import <file.json> --design design` writes the facts into `tokens.md` without the AI. The prompts work either way.
 
-Attach the matching template from [`../templates`](../templates) to each prompt, so the AI copies its exact format. Run 2-component once per component, starting with the ones your core journeys use.
+Attach the matching template from [`../templates`](../templates) to each prompt, so the AI copies its exact format. Run 2-component once per component, starting with the ones your core journeys use, and 2b-flow once per core journey.
 
 When you are done, check your files:
 
 ```bash
-npx github:Owl-Listener/habitat validate design
+npx @owl-listener/habitat validate design
 ```

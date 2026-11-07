@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Owl-Listener/habitat/schema/flow.schema.json",
+  "title": "habitat flow",
+  "description": "The YAML front matter of a flows/*.md file: how a core journey moves from screen to screen. The screens and transitions come from the Figma prototype's connections; the conditions, the unhappy paths and the rules come from the designer, because a prototype usually shows only the path where everything goes right.",
+  "type": "object",
+  "required": ["kind", "status", "name", "journey", "purpose", "screens", "transitions"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "flow" },
+    "status": {
+      "enum": ["draft", "reviewed", "deprecated"],
+      "description": "'draft' while it is being filled in, 'reviewed' once a person has checked it (no TODOs left), 'deprecated' when the journey no longer works this way."
+    },
+    "owner": { "type": "string", "description": "Who answers questions about this journey." },
+    "lastReviewed": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "When a person last checked this file against the prototype (YYYY-MM-DD)." },
+    "name": { "type": "string", "description": "The flow's name, e.g. 'Send an invoice'." },
+    "journey": { "type": "string", "description": "The core journey in DESIGN.md this flow belongs to, in the same words." },
+    "figma": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string" },
+        "page": { "type": "string", "description": "The Figma page the prototype is on." },
+        "startingPoint": { "type": "string", "description": "The name of the prototype's flow starting point." },
+        "nodeId": { "type": "string", "description": "The node id of the first screen." }
+      }
+    },
+    "purpose": { "type": "string", "description": "What the user is trying to get done, and what counts as done, in a sentence or two." },
+    "screens": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The screens of the journey, in order, read from the prototype's top-level frames.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "A short id that transitions refer to, e.g. 'review'." },
+          "name": { "type": "string", "description": "The frame's name in Figma, or what the team calls the screen." },
+          "figma": { "type": "object", "properties": { "nodeId": { "type": "string" } } },
+          "purpose": { "type": "string", "description": "What this screen is for, in a sentence." },
+          "components": { "type": "array", "items": { "type": "string" }, "description": "The design system components on the screen, by canonical name." },
+          "end": { "type": "boolean", "description": "True when the journey is meant to finish here, so a screen with no way out is not reported as a dead end." }
+        }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "description": "How the user moves between screens, read from the prototype's connections (Figma calls them reactions).",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "trigger"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "type": "string", "description": "The id of the screen it starts on." },
+          "to": { "type": "string", "description": "The id of the screen it leads to, or 'back' or 'close'." },
+          "trigger": {
+            "type": "string",
+            "description": "What starts it, in Figma's words: click, hover, press, drag, key, after-delay, while-hovering, mouse-enter."
+          },
+          "element": { "type": "string", "description": "The layer that is clicked or pressed, e.g. 'Send invoice'." },
+          "component": { "type": "string", "description": "The design system component the element is an instance of, e.g. 'Button'." },
+          "action": {
+            "enum": ["navigate", "overlay", "swap", "back", "close", "scroll", "open-link", "change-to"],
+            "description": "What happens: navigate to a screen, open an overlay (a dialog or sheet), swap an overlay, go back, close an overlay, scroll, open a link, or change a component's variant."
+          },
+          "condition": { "type": "string", "description": "When this transition is allowed or taken, e.g. 'only when every required field is valid'. Prototypes rarely show this; ask the designer." }
+        }
+      }
+    },
+    "unhappyPaths": {
+      "type": "array",
+      "description": "What happens when things go wrong: errors, empty states, lost connections, cancelling halfway. A prototype rarely shows these, so they come from the designer.",
+      "items": {
+        "type": "object",
+        "required": ["when", "then"],
+        "additionalProperties": false,
+        "properties": {
+          "when": { "type": "string", "description": "What goes wrong, e.g. 'sending fails'." },
+          "then": { "type": "string", "description": "What the user sees and can do next." },
+          "screen": { "type": "string", "description": "The screen id it happens on." },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "antiPatterns": {
+      "type": "array",
+      "description": "What an agent must never do in this journey, with the reason, as in a component file.",
+      "items": {
+        "type": "object",
+        "required": ["never", "because"],
+        "additionalProperties": false,
+        "properties": {
+          "never": { "type": "string" },
+          "because": { "type": "string" },
+          "source": { "type": "string", "description": "Who stated this rule and when." },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "evidence": { "type": "array", "items": { "type": "string" }, "description": "Research insights the flow as a whole rests on." }
+  }
+}

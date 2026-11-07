@@ -1,7 +1,7 @@
 {
-  "name": "habitat",
-  "version": "0.2.0",
-  "description": "Make your own design system legible to AI agents: templates, a guided Figma + AI extraction, a validator, and an MCP server.",
+  "name": "@owl-listener/habitat",
+  "version": "0.3.0",
+  "description": "Make your own design system legible to AI agents: templates, a guided Figma + AI extraction, a validator, code checks, token import and export, automated evals, and an MCP server.",
   "type": "module",
   "bin": {
     "habitat": "bin/habitat.js"
@@ -19,13 +19,40 @@
     "validate": "node bin/habitat.js validate examples/design --strict",
     "serve": "node bin/habitat.js serve examples/design",
     "test": "node --test test/habitat.test.js",
-    "check": "node bin/habitat.js check examples/code --design examples/design"
+    "check": "node bin/habitat.js check examples/code --design examples/design",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "design-system",
+    "design-tokens",
+    "dtcg",
+    "figma",
+    "mcp",
+    "ai",
+    "agents",
+    "claude",
+    "evals"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Owl-Listener/habitat.git"
+  },
+  "homepage": "https://github.com/Owl-Listener/habitat#readme",
+  "bugs": {
+    "url": "https://github.com/Owl-Listener/habitat/issues"
   },
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "@babel/parser": "^7.29.13",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "ajv": "^8.17.1",
     "gray-matter": "^4.0.3",
+    "yaml": "^2.9.1",
     "zod": "^3.23.0"
   },
   "engines": {

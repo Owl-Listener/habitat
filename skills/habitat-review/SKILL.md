@@ -18,11 +18,12 @@ A review has two jobs. The first is to find what breaks the rules. The second is
 
 ## Step 1: Load the system
 
-Read, through the habitat MCP server if it is connected (`get_principles`, `list_components`, `get_component`, `get_tokens`, `get_rules`), or from the files:
+Read, through the habitat MCP server if it is connected (`get_principles`, `list_components`, `get_component`, `get_tokens`, `get_rules`, `get_flows`), or from the files:
 
 - `DESIGN.md`: principles, core journeys, interaction rules, language, colour, layout, "choosing between components", "never".
 - `tokens.md`: what each token means, `useFor` and `avoid`.
 - The component files for every component the screen uses, including `whenToUse`, `antiPatterns`, `anatomy` and `accessibility`.
+- The flow for the screen's journey, if there is one: `get_flows`, or `flows/`. It says which screens come before and after, when each step is allowed, and what should happen when something goes wrong.
 - The research for the screen's journey: `get_research`, or `research/insights/`. Insights let you judge things no rule covers, and they are citable too.
 
 ## Step 2: Get the thing to review
@@ -36,7 +37,7 @@ Ask which core journey it belongs to, if that is not obvious. The journey tells 
 
 ## Step 3: Automatic checks
 
-For code, run `npx github:Owl-Listener/habitat check <paths> --design design` (or call the `check_code` MCP tool). It finds raw colours and sizes, unknown tokens, native elements where the system has a component, and deprecated components, with file and line. Include its findings in the report; do not repeat the work by eye.
+For code, run `npx @owl-listener/habitat check <paths> --design design` (or call the `check_code` MCP tool). It finds raw colours and sizes, unknown tokens, native elements where the system has a component, and deprecated components, with file and line. Include its findings in the report; do not repeat the work by eye.
 
 For a Figma frame, check the equivalent by reading the frame: fills and spacing not bound to variables, detached instances, and layers drawn by hand where the library has a component.
 
