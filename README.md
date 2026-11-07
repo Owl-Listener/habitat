@@ -6,7 +6,7 @@ Ask a coding agent to build a screen with your design system and watch what happ
 
 habitat is a kit for writing those decisions down, in a form an agent can read, and then checking that it worked. You keep your own design system; habitat helps you make it legible. You bring your Figma library and your AI, and together they draw the reasoning out of you, a few questions at a time.
 
-By MC Dean · [MC Percolates on Substack](https://marieclairedean.substack.com) · MIT licensed
+By MC Dean · [MC Percolates on Substack](https://marieclairedean.substack.com) · [On npm as @owl-listener/habitat](https://www.npmjs.com/package/@owl-listener/habitat) · MIT licensed
 
 ---
 
@@ -233,7 +233,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Owl-Listener/habitat@main
+      - uses: Owl-Listener/habitat@v0.3.0
         with:
           paths: src
           design: design
@@ -316,6 +316,14 @@ Thank you to everyone writing openly about this while it's still being worked ou
 Fork it, break it, make it better. Run `npm install` and then `npm test` before you open a pull request.
 
 If you try habitat on your own design system, I'd love to hear what your before and after looked like. That's the real test of whether any of this works, so go and run your baseline, then [open an issue](https://github.com/Owl-Listener/habitat/issues) and tell me what you find.
+
+### Releasing a new version
+
+1. Change `version` in `package.json` (for example to `0.4.0`), and merge that change into main.
+2. On GitHub, go to Releases and draft a new release. Give it a tag that matches the version with a `v` in front (`v0.4.0`), targeting main, and publish it.
+3. GitHub runs the tests and publishes the package to npm. It stops if the tag and the version don't match. You can follow it under the Actions tab, and the new version is usually on npm within a few minutes.
+
+Then update the `@v0.3.0` in the GitHub Action example above to the new tag.
 
 ## Licence
 
