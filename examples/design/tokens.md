@@ -19,6 +19,9 @@ tokens:
   - name: color.brand.default
     tier: semantic
     aliasOf: color.teal.600
+    figma:
+      variable: color/brand/default
+      collection: Semantic
     meaning: 'Primary brand colour, used for primary actions.'
     useFor: The background of the single primary action in a view.
     avoid: >-
@@ -136,6 +139,20 @@ tokens:
     tier: semantic
     value: 120ms
     meaning: Duration for state transitions like hover.
+  - name: type.style.heading
+    tier: semantic
+    type: typography
+    value:
+      fontFamily: 'system-ui, sans-serif'
+      fontSize: 20px
+      fontWeight: 600
+      lineHeight: 1.3
+    figma:
+      style: Heading/Medium
+      styleType: TEXT
+    meaning: 'Screen and section headings. Read from a Figma text style, not a variable.'
+    useFor: The one heading at the top of a screen or a card.
+    avoid: 'Emphasis inside body text. Use type.weight.medium, so headings stay a signal of structure.'
 ---
 
 # Tokens

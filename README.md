@@ -24,14 +24,14 @@ Then it tests the result. Ask an AI to build a real screen with no context, look
 - **An AI tool.** Claude Code gets the guided skills. Anything else (ChatGPT, Gemini, Cursor) can use the copy-paste prompts.
 - **Your Figma library, connected to your AI** through the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server). No connection? Screenshots and a variables export work too, just more slowly.
 
-You don't need to install habitat itself. Every command below runs it straight from GitHub with `npx`.
+You don't need to install habitat itself. Every command below runs it straight from npm with `npx`.
 
 ## Quick start
 
 In your project folder:
 
 ```bash
-npx github:Owl-Listener/habitat init
+npx @owl-listener/habitat init
 ```
 
 Then, in Claude Code:
@@ -48,7 +48,7 @@ Here's what it looks like for Sam, a design lead with a Figma library and a Reac
 
 ### 1. Set up (five minutes)
 
-Sam runs `npx github:Owl-Listener/habitat init` in the project folder. That creates a `design/` folder with the templates, installs three Claude Code skills, and adds a short block of always-on rules to `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`. Claude Code, Cursor and other agents that support these files read them before every task. They say: read the design system first, never hard-code values, and if something's missing, say so instead of inventing a lookalike.
+Sam runs `npx @owl-listener/habitat init` in the project folder. That creates a `design/` folder with the templates, installs four Claude Code skills, and adds a short block of always-on rules to `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`. Claude Code, Cursor and other agents that support these files read them before every task. They say: read the design system first, never hard-code values, and if something's missing, say so instead of inventing a lookalike.
 
 It never overwrites anything. Run it twice and nothing changes.
 
@@ -60,11 +60,13 @@ Sam finds eight problems. Two primary buttons, a hand-built date picker, hard-co
 
 ### 3. Write it down (an afternoon to a few days)
 
-The AI reads what it can from Figma: tokens, components, variants, states, layers, auto layout. Then it interviews Sam for what Figma can't hold.
+The AI reads what it can from Figma: variables and styles, components, variants, states, layers, auto layout, and the prototype's screens and the connections between them. Then it interviews Sam for what Figma can't hold.
 
 - How do you decide between primary and secondary?
 - What's the most common mistake people make with this?
 - Why is that a problem?
+
+For each journey it also asks what the prototype doesn't show: when each step is allowed, and what happens when something goes wrong. Prototypes almost always show the path where everything works, and that's exactly where agents improvise.
 
 Sam's answers go into the files in Sam's own words, with Sam's name and the date on each rule, so anyone can trace a rule back to a decision.
 
@@ -73,10 +75,16 @@ Sam's answers go into the files in Sam's own words, with Sam's name and the date
 The AI runs the same prompt again, this time with the files. Sam says what's still wrong, and each correction becomes a new rule. When the AI writes code, `habitat check` gives a number anyone can repeat:
 
 ```bash
-npx github:Owl-Listener/habitat check src/screens --design design
+npx @owl-listener/habitat check src/screens --design design
 ```
 
 Eight problems down to one is the evidence. Sam stops when the corrections feel like matters of taste rather than rules.
+
+Once the team has an Anthropic API key, `habitat eval` does the asking and the counting for them. It runs the same prompt several times with and without the design system, counts the problems in each, and can have Claude review each screen against the team's own rules. The numbers land in `design/evals/`, so this month's run can be compared with last month's:
+
+```bash
+npx @owl-listener/habitat eval design --journey "Send an invoice" --prompt "Build the screen where a user sends an invoice to an existing customer" --judge
+```
 
 ### 5. Bring in the research (optional, and worth it)
 
@@ -91,7 +99,7 @@ If the team keeps evidence-based descriptions of who it serves, those can go in 
 ### 6. Switch it on for the team
 
 ```bash
-claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design
+claude mcp add habitat -- npx -y @owl-listener/habitat serve design
 ```
 
 Now, when anyone asks an agent to build UI, it reads the principles, looks up the right components and what the team knows about the people it's building for, checks its own code before handing it over, and says "there's no date picker in the system" instead of quietly building one.
@@ -101,8 +109,9 @@ Now, when anyone asks an agent to build UI, it reads the principles, looks up th
 A design system keeps growing, and documentation that no longer matches it is worse for an agent than none, because the agent follows it with confidence.
 
 - **`/habitat-review`** critiques any screen, Figma frame or pull request against the team's rules, and names the rule behind every problem. Anything no rule covers comes back as a proposed new rule, so every review makes the system a little smarter.
-- **`/habitat-refresh`** re-reads Figma when the library changes. It updates the facts, never touches the reasons, and hands Sam a short list of the decisions only a person can make.
-- **`habitat parity`** shows where the documentation and the code disagree.
+- **`/habitat-refresh`** re-reads Figma when the library changes: components, variables, styles and prototypes. It updates the facts, never touches the reasons, and hands Sam a short list of the decisions only a person can make.
+- **`habitat tokens import`** brings a W3C design tokens file (Figma's variable export, Tokens Studio and others speak it) into `tokens.md` under the same rule, and **`habitat tokens export`** hands the tokens, meanings included, back to any token pipeline.
+- **`habitat parity`** reads the component code and shows where it and the documentation disagree, in both directions: props the documentation promises that the code doesn't have, and props and values the code has that nobody wrote down.
 - **`habitat validate`** flags any file nobody has reviewed in six months, research that's more than a year old, and rules that still cite findings newer research has replaced.
 
 ### Or start smaller
@@ -121,7 +130,7 @@ The walkthrough above, as a list you can work through on your own design system.
 
 ### Set up (five minutes)
 
-- [ ] **Run `npx github:Owl-Listener/habitat init`** in your project folder. Done when you have a `design/` folder, four skills in `.claude/skills/`, and the habitat rules in `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`.
+- [ ] **Run `npx @owl-listener/habitat init`** in your project folder. Done when you have a `design/` folder, four skills in `.claude/skills/`, and the habitat rules in `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`.
 
 ### See the problem first (about half an hour)
 
@@ -131,23 +140,25 @@ The walkthrough above, as a list you can work through on your own design system.
 
 ### Write it down (an afternoon to a few days)
 
-- [ ] **Tokens.** Claude reads your variables and sorts them into primitive, semantic and component tiers; you explain the ambiguous ones, and where brand and status colours may and may not go. Done when every semantic token in `tokens.md` has a meaning.
+- [ ] **Tokens.** Claude reads your variables and styles and sorts them into primitive, semantic and component tiers (or run `npx @owl-listener/habitat tokens import` on a design tokens export); you explain the ambiguous ones, and where brand and status colours may and may not go. Done when every semantic token in `tokens.md` has a meaning.
 - [ ] **Components, one at a time**, starting with the ones your journeys use. Claude reads the variants, properties, states, layers and auto layout; you say what each is for, how to choose between variants, what people get wrong and why, who owns it, and whether it's being retired. Done when each has a file with at least two never … because … rules.
+- [ ] **Journeys, one per core journey.** Claude reads the screens and connections from your prototype; you say when each step is allowed and what happens when things go wrong. Done when each core journey has a file in `design/flows/` with its unhappy paths filled in.
 - [ ] **Principles and interaction rules.** An interview about your product and its users, what your brand colour means, and how forms, errors, dialogs, loading and destructive actions behave. Done when `DESIGN.md` has no big gaps.
 - [ ] **Optional, and worth it: bring in your research** with `/habitat-research`. Hand over whatever you have; a researcher confirms each finding, then Claude links findings to rules. Done when your key rules cite evidence, and you've seen which ones rest on nothing.
-- [ ] **Optional: link components to code.** Add where each lives in your codebase, then run `npx github:Owl-Listener/habitat parity design --code src/components`. Done when nothing is missing from code, and you know which code components have no documentation yet.
+- [ ] **Optional: link components to code.** Add where each lives in your codebase, then run `npx @owl-listener/habitat parity design --code src/components`. Done when nothing is missing from code, and you know which code components have no documentation yet.
 
 ### Prove it worked (an hour or two, more than once)
 
 - [ ] **Run the baseline prompt again**, word for word, with the files in place. Each problem you still see becomes a new rule.
-- [ ] **Count the problems.** If Claude wrote code, `npx github:Owl-Listener/habitat check <files> --design design` gives a number anyone can repeat. Log each run in `design/evals/`.
+- [ ] **Count the problems.** If Claude wrote code, `npx @owl-listener/habitat check <files> --design design` gives a number anyone can repeat. Log each run in `design/evals/`.
+- [ ] **Optional: automate it.** With an Anthropic API key, `npx @owl-listener/habitat eval design --prompt "…" --judge` runs the prompt with and without your files, three times each, and writes the counts to `design/evals/`. Done when you have an automatic report you can run again next month.
 - [ ] **Repeat until your corrections are about taste rather than rules**, then move on to the next journey. Done when the count has dropped clearly from your baseline.
 
 ### Finish and switch it on (about half an hour)
 
-- [ ] **Run `npx github:Owl-Listener/habitat validate design`** and clear the errors.
+- [ ] **Run `npx @owl-listener/habitat validate design`** and clear the errors.
 - [ ] **Answer the remaining TODOs**, or leave the ones you choose to, and set `status: reviewed` and `lastReviewed` on each file you've checked.
-- [ ] **Connect it to Claude Code:** `claude mcp add habitat -- npx -y github:Owl-Listener/habitat serve design`
+- [ ] **Connect it to Claude Code:** `claude mcp add habitat -- npx -y @owl-listener/habitat serve design`
 - [ ] **Commit `design/` and the rules files**, so your whole team and their agents get them. Done when a teammate asks Claude for a screen and it builds from your system, or tells them what's missing instead of inventing it.
 
 ### Keep it true (as you go)
@@ -155,7 +166,8 @@ The walkthrough above, as a list you can work through on your own design system.
 - [ ] **When Figma changes**, run `/habitat-refresh` and answer the decisions it lists.
 - [ ] **When you review a screen or pull request**, run `/habitat-review`, and adopt the proposed rules you agree with.
 - [ ] **When new research lands**, add it with `/habitat-research`, and retire the findings it replaces.
-- [ ] **Every so often**, run `validate` to catch files nobody has reviewed in six months and research more than a year old. You can also add `validate --strict` and `check` to your CI.
+- [ ] **Every so often**, run `validate` to catch files nobody has reviewed in six months and research more than a year old. You can also add `validate --strict` to your CI.
+- [ ] **Optional: check every pull request.** Add the habitat GitHub Action or the ESLint plugin (see [In pull requests and your editor](#in-pull-requests-and-your-editor)). Done when a pull request with a hard-coded colour gets a comment on that line.
 
 ### If you only have an afternoon
 
@@ -170,6 +182,8 @@ your-project/
 │   ├── tokens.md          every token, its tier, and what it means
 │   ├── components/
 │   │   └── button.md      one file per component: a contract, then your notes
+│   ├── flows/
+│   │   └── send-invoice.md one file per core journey: screens, steps, what goes wrong
 │   ├── research/          optional: what you know about your users
 │   │   ├── insights/      one finding per file, with its evidence and confidence
 │   │   └── people/        optional: the kinds of people you serve
@@ -179,7 +193,7 @@ your-project/
 └── .cursor/rules/habitat.mdc
 ```
 
-Each component file opens with a structured contract: what it's for, when to use each variant, its states, anatomy and layout, which tokens it uses, accessibility, and the things it must never do, each with a because, and the research it rests on where there is some. Your notes go underneath, in plain prose. Have a look at the worked example in [`examples/design`](examples/design) to see a finished set.
+Each component file opens with a structured contract: what it's for, when to use each variant, its states, anatomy and layout, which tokens it uses, accessibility, and the things it must never do, each with a because, and the research it rests on where there is some. Your notes go underneath, in plain prose. Each flow file does the same for a journey: its screens and the components on them, the steps between them and when each is allowed, what happens when things go wrong, and what never to do along the way. Have a look at the worked example in [`examples/design`](examples/design) to see a finished set.
 
 ## The commands
 
@@ -187,20 +201,66 @@ Each component file opens with a structured contract: what it's for, when to use
 | --- | --- |
 | `habitat init [folder]` | Sets up a design folder (`design` by default), the skills and the always-on rules |
 | `habitat validate [folder]` | Checks every file, lists open TODOs, and warns about stale files, missing tokens and broken references. Add `--strict` in CI to fail while any TODO remains |
-| `habitat check <files> --design <folder>` | Checks code for hard-coded colours and sizes, invented tokens, retired components, and native elements where your system has a component, with file and line |
-| `habitat parity [folder] --code <folder>` | Checks each documented component exists in code with the props it promises, and lists code components with no documentation |
+| `habitat check <files> --design <folder>` | Checks code for hard-coded colours and sizes, invented tokens, retired components, and native elements where your system has a component, with file, line and the fix where there's one right answer. `--fix` applies those fixes, `--changed-since origin/main` keeps to the lines you changed, and `--format github` annotates a pull request |
+| `habitat parity [folder] --code <folder>` | Reads your component code and checks each documented component exists with the props, values and defaults it promises; lists props and code components nobody documented |
+| `habitat tokens import <files> --design <folder>` | Brings W3C design tokens JSON (one file per mode) into `tokens.md`: updates values, never meanings. Add `--dry-run` to see the changes first |
+| `habitat tokens export [folder]` | Writes your tokens, meanings included, as W3C design tokens JSON for other tools |
+| `habitat export [folder]` | Writes a `DESIGN.md` in [Google's open format](https://github.com/google-labs-code/design.md), so tools that read that format get your tokens, components and rules too. Add `--name` for your product's name |
+| `habitat eval [folder] --prompt "…"` | Runs the prompt with and without your design system, counts the problems, and writes a report to `evals/`. Add `--judge` for a review against your rules, `--dry-run` to see the plan. Needs an Anthropic API key |
 | `habitat serve [folder]` | Serves your design folder to a coding agent over MCP |
 
-Put `npx github:Owl-Listener/habitat` in front of each one. When an agent is connected through `serve`, it gets seven tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, `get_research` for what the team knows about its users, and `check_code` for checking its own work.
+Put `npx @owl-listener/habitat` in front of each one. When an agent is connected through `serve`, it gets eight tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, `get_flows` for how a journey moves between screens, `get_research` for what the team knows about its users, and `check_code` for checking its own work.
 
 ## The skills and prompts
 
 | For Claude Code | For any other AI | When |
 | --- | --- | --- |
-| `/habitat-extract` | [prompts 0 to 4](prompts) | Writing your system down for the first time |
+| `/habitat-extract` | [prompts 0 to 4](prompts), with 2b for journeys | Writing your system down for the first time |
 | `/habitat-research` | [research.md](prompts/research.md) | When you have user research to bring in |
 | `/habitat-review` | [review.md](prompts/review.md) | Whenever you want a screen critiqued against your rules |
 | `/habitat-refresh` | [refresh.md](prompts/refresh.md) | When your Figma library changes |
+
+## In pull requests and your editor
+
+You don't have to remember to run `check`. Two ways to have it run for you:
+
+**On every pull request.** Add this to a workflow in `.github/workflows/`, and problems show up as comments on the lines the pull request changed. Old code doesn't block new work.
+
+```yaml
+on: pull_request
+jobs:
+  design-system:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Owl-Listener/habitat@main
+        with:
+          paths: src
+          design: design
+```
+
+**In your editor, and in the linting you already run.** habitat comes with an ESLint plugin that runs the same checks as you type, and `eslint --fix` applies the same safe fixes. In `eslint.config.js`:
+
+```js
+import habitat from "@owl-listener/habitat/eslint";
+
+export default [
+  habitat.configs.recommended, // reads ./design
+];
+```
+
+For another folder: `{ plugins: { habitat }, rules: { "habitat/design-system": ["warn", { design: "src/design" }] } }`.
+
+A fix is only ever automatic when there's exactly one right answer: a raw value that matches one token of the right kind (a spacing token on `padding`, a text colour on `color`). Swapping a hand-built button for your Button component is always left to a person, because the props differ.
+
+## Habitat and the tools you already use
+
+Habitat is the judgement layer. It works best next to the tools that hold your facts, rather than instead of them.
+
+- **[Figma's MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server)** is where the facts come from. Figma also offers a skill that writes design system rules from your codebase's conventions. Habitat's rules come from your team's reasons, and the two sit happily side by side.
+- **[Storybook's MCP addon](https://storybook.js.org/blog/storybook-mcp-for-react/)** and the **shadcn MCP** tell an agent which components exist in code and which props they take. Connect them alongside habitat: they say what a component is, habitat says when to use it and what never to do with it. The extract, review and refresh skills use them when they're connected.
+- **[DESIGN.md](https://github.com/google-labs-code/design.md)** is Google's open format for describing a design system in one file, popularised by collections like [awesome-design-md](https://github.com/VoltAgent/design-md). Those files capture how a product looks; habitat captures why. `habitat export` writes your system in that format, so you can use both.
+- **W3C design tokens.** `habitat tokens import` and `export` speak the format Figma's variable export, Tokens Studio and Style Dictionary share.
 
 ## What habitat can't do for you
 
@@ -219,13 +279,15 @@ habitat/
 ├── templates/          the blank files that init copies into your project
 ├── skills/             the four Claude Code skills
 ├── prompts/            the same processes as copy-paste prompts, for any AI
-├── schema/             what a valid component file and tokens file look like
+├── schema/             what valid component, flow, tokens and research files look like
 ├── bin/ and lib/       the habitat command
 ├── mcp-server/         serves a design folder to an agent
 ├── examples/
 │   ├── design/         a finished design folder for an imaginary product, Ledger
 │   └── code/           the Button and Input it describes, in React
 ├── test/               tests for the command and the MCP server
+├── .github/workflows/  validation on every push, and publishing to npm on each release
+├── action.yml          the GitHub Action that checks pull requests
 └── docs/intent-spec.md every field in the contract, why it exists, and where its answer comes from
 ```
 
@@ -233,7 +295,21 @@ habitat/
 
 - [agent-ready](https://github.com/Owl-Listener/agent-ready) scores how legible your Figma file is to an agent. Every field in a habitat contract maps to one of its checks, so the two define the same standard from two directions.
 - [designer-skills](https://github.com/Owl-Listener/designer-skills) is the judgement of a design team, written down as agent skills.
+- [DESIGN.md](https://github.com/google-labs-code/design.md) by Google Labs is an open, single-file format for design systems. habitat can export to it.
+- [design-system-mcp](https://glama.ai/mcp/servers/dgesteves/design-system-mcp) serves a React design system's components and tokens to agents, with a linter whose fix-it suggestions inspired habitat's.
 - [Design System Contracts](https://github.com/southleft/ds-contracts-poc) by Southleft generates matching React and Figma libraries from machine-readable contracts. It captures structure where habitat captures judgement, and the two fit together well. Their with-and-without test is a good model for your own evals, the same model scored 100 with contracts and 69 without.
+
+## Further reading
+
+The writing that shaped habitat. Each one is worth your time in full.
+
+- **[Designing with AI](https://buzzusborne.com/work/designing-with-ai/)** by Buzz Usborne. How Help Scout made a mature design system legible to LLMs: articulating how they design as well as what, a design.md built through repeated evals, and full parity between Figma and React. The clearest account I've read of how much work this really is, and why it pays off.
+- **[My 4-step framework to make design systems AI-readable](https://medium.muz.li/my-4-step-framework-to-make-design-systems-ai-readable-74ba07145312)** by The Maker's Lab. Audit a handful of components first, generate specs that include anatomy and layout, start with one component, and measure the difference.
+- **[Designing with AI-Readable Design Systems in Cursor](https://medium.com/design-bootcamp/working-with-ai-readable-design-systems-in-cursor-2bba9c9c09d9)** on Bootcamp. Prompts, rules and instructions as three layers, always-on rules the agent reads before every task, and checkpoints where the AI compares its output with the system.
+- **[Machine-Readable Design Tokens for AI-Ready Component Libraries](https://southleft.com/insights/design-systems/machine-readable-design-tokens-for-ai-ready-component-libraries/)** by Southleft. Primitive, semantic and component tokens, and the case for putting each token's usage rule in its description, because that's the guidance a name can't carry.
+- **[Digital Design Systems as the Foundation for AI-Powered Product Development](https://ibmix.de/en/blog/design-systems-and-ai)** by IBM iX. The organisational view: governance, versioning and deprecation, interaction and validation rules for agents, a traceable why behind every pattern, and measuring impact rather than activity.
+
+Thank you to everyone writing openly about this while it's still being worked out. If you've written something that belongs here, [open an issue](https://github.com/Owl-Listener/habitat/issues) and tell me about it.
 
 ## Contributing
 

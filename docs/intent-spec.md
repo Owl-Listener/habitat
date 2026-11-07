@@ -2,7 +2,7 @@
 
 This is the contract every habitat component file carries, and the reasoning behind each field. It is deliberately the same shape as the checks in [agent-ready](https://github.com/Owl-Listener/agent-ready): agent-ready measures whether a file has these things, habitat helps you write them down for your own system. Between the two repos, the same standard is defined from two directions.
 
-The contract is the YAML front matter at the top of each `components/<name>.md`. The schema lives in [`../schema/component.schema.json`](../schema/component.schema.json); tokens have their own in [`../schema/tokens.schema.json`](../schema/tokens.schema.json). This document explains why each field is there, and where its answer comes from.
+The contract is the YAML front matter at the top of each `components/<name>.md`. The schema lives in [`../schema/component.schema.json`](../schema/component.schema.json); tokens have their own in [`../schema/tokens.schema.json`](../schema/tokens.schema.json), and journeys in [`../schema/flow.schema.json`](../schema/flow.schema.json). This document explains why each field is there, and where its answer comes from.
 
 ## The mapping
 
@@ -49,9 +49,23 @@ A rule is compressed judgement: it tells an agent what to do in the cases someon
 
 The links make three things checkable: a rule that cites research which does not exist or has been retired, a rule that rests only on a hunch, and a finding that no rule has acted on yet. Research files hold distilled, anonymised findings and link to their sources, never transcripts or personal data, because they are committed to a repository and read by AI tools.
 
+## Why journeys have their own files
+
+A component file says what one part is for. It can't say what comes before or after it, which is what an agent needs when it's asked for the third screen of a journey. A flow file holds that: the screens of one core journey, the components on each, and the transitions between them.
+
+The screens and transitions come from the Figma prototype's connections, so they are facts. Two things never come from the prototype, and they are the point of the file. The `condition` on a transition (when is this step allowed?) and the `unhappyPaths` (what does the user see when sending fails, or when they leave halfway?) come from the designer, because prototypes almost always show only the path where everything works. That's exactly where agents improvise. A flow can carry `antiPatterns` too, for rules that belong to a journey rather than a component, like "never add a confirmation dialog before sending".
+
+## Why tokens can come from styles, and travel as DTCG
+
+Plenty of Figma libraries still keep colours, type and shadows as styles rather than variables. An agent needs both, so a token can record where it came from: `figma.variable`, or `figma.style` and `figma.styleType`. A text style's value is an object (font, size, weight, line height). When a colour style and a variable share a value, the validator says so, because two names for one decision means an agent will use either.
+
+Tokens can also move in and out as W3C design tokens (DTCG) JSON, the format Figma's variable export and most token tools share. Import follows the same rule as refresh: values, aliases and modes are facts and get updated; meaning, useFor and avoid are judgement and never get touched. Export carries the judgement along in `$description` and `$extensions.habitat`, so it isn't lost on the way to another tool.
+
 ## Why evals are part of the spec
 
 A contract is only as good as the screens an agent builds from it. `evals/` records the same prompt run before the documentation existed and after each round of calibration, with a count of what went wrong. The drop is the evidence that the documentation works, and every problem that survives points at the rule still missing.
+
+A count made by eye depends on who is looking. `habitat eval` makes the count repeatable: it runs the prompt several times with and without the design system (AI output varies, so one run proves little), counts what the automatic checks find, and with `--judge` asks Claude to review each screen against the system's own rules. Both conditions are judged against the same rules, so the baseline is measured against the rules it never saw. The generated code is kept, because a judge can be wrong and a person should be able to check.
 
 ## Why this is a standard, not just a file format
 

@@ -2,12 +2,13 @@
  * habitat MCP server
  *
  * Serves a design folder to a coding agent over MCP (stdio), so the agent
- * reads your system instead of guessing at it. Seven tools:
+ * reads your system instead of guessing at it. Eight tools:
  *   - get_principles  : DESIGN.md, the product-wide rules and taste
  *   - list_components : names + purposes of every component
  *   - get_component   : the full contract and notes for one component
  *   - get_tokens      : the tokens, with what each one means
  *   - get_rules       : every anti-pattern across the system, in one place
+ *   - get_flows       : how each core journey moves from screen to screen
  *   - get_research    : what the team knows about its users, by journey or person
  *   - check_code      : the automatic checks, so an agent can check its own work
  *
@@ -17,6 +18,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { loadDesign, findComponent } from "../lib/habitat.js";
 import { checkCode } from "../lib/check.js";
@@ -26,7 +28,8 @@ const text = (value) => ({
 });
 
 export async function serve(dir) {
-  const server = new McpServer({ name: "habitat", version: "0.2.0" });
+  const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  const server = new McpServer({ name: "habitat", version });
 
   server.registerTool(
     "get_principles",
@@ -101,12 +104,37 @@ export async function serve(dir) {
     { description: "Get every anti-pattern and relationship across the whole system, so the agent knows what never to do and how components fit together." },
     async () =>
       text(
-        loadDesign(dir).components.map(({ data }) => ({
-          component: data?.name?.canonical,
-          antiPatterns: data?.antiPatterns || [],
-          relationships: data?.relationships || {},
-        }))
+        [
+          ...loadDesign(dir).components.map(({ data }) => ({
+            component: data?.name?.canonical,
+            antiPatterns: data?.antiPatterns || [],
+            relationships: data?.relationships || {},
+          })),
+          ...loadDesign(dir).flows.filter(({ data }) => data?.antiPatterns?.length).map(({ data }) => ({
+            flow: data.name,
+            antiPatterns: data.antiPatterns,
+          })),
+        ]
       )
+  );
+
+  server.registerTool(
+    "get_flows",
+    {
+      description:
+        "Get how a core journey moves from screen to screen: its screens and the components on them, the transitions between them and when each is allowed, what happens when things go wrong, and what never to do in it. Call it before building any screen that is part of a journey, so the screen fits the steps around it.",
+      inputSchema: {
+        journey: z.string().optional().describe("A journey or flow name, e.g. 'Send an invoice'. Leave it out to list every flow."),
+      },
+    },
+    async ({ journey }) => {
+      const flows = loadDesign(dir).flows.filter(({ data }) => data && data.status !== "deprecated");
+      if (!journey) return text(flows.map(({ data }) => ({ name: data.name, journey: data.journey, purpose: data.purpose, screens: data.screens.map((s) => s.name) })));
+      const wanted = journey.toLowerCase();
+      const match = flows.find(({ data }) => [data.name, data.journey].some((n) => n?.toLowerCase().includes(wanted)));
+      if (!match) return text(`No flow for "${journey}". The team has not documented this journey yet; ask how it should work rather than inventing the steps.`);
+      return text({ ...match.data, notes: match.body });
+    }
   );
 
   server.registerTool(
@@ -155,7 +183,8 @@ export async function serve(dir) {
     async ({ code, filename = "snippet.tsx" }) => {
       const findings = checkCode(loadDesign(dir), [{ path: resolve(filename), text: code }]);
       if (!findings.length) return text("No problems found by the automatic checks. Rules about judgement still need a person or /habitat-review.");
-      return text(findings.map((f) => `line ${f.line}  ${f.rule}  ${f.message}`).join("\n"));
+      const lines = findings.map((f) => `line ${f.line}, column ${f.column + 1}  ${f.rule}  ${f.message}${f.fix ? `  fix: replace with ${f.fix.replacement}` : ""}`);
+      return text(`${lines.join("\n")}\n\nApply each fix given. Where none is given, choose the token or component by its meaning, or ask.`);
     }
   );
 

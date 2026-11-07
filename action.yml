@@ -1,0 +1,58 @@
+name: habitat check
+description: Check UI code against your habitat design system, and annotate the lines a pull request changed.
+author: MC Dean
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  paths:
+    description: The files or folders to check, separated by spaces.
+    required: false
+    default: src
+  design:
+    description: Your habitat design folder.
+    required: false
+    default: design
+  changed-only:
+    description: On a pull request, only report problems on the lines it changed, so old code does not block new work.
+    required: false
+    default: "true"
+  fail-on-problems:
+    description: Fail the check when problems are found. Set to "false" to only annotate.
+    required: false
+    default: "true"
+  version:
+    description: The version of @owl-listener/habitat to run.
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: Fetch the base branch, so changed lines can be worked out
+      if: inputs.changed-only == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      run: git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+
+    - name: Check UI code against the design system
+      shell: bash
+      env:
+        HABITAT_PATHS: ${{ inputs.paths }}
+        HABITAT_DESIGN: ${{ inputs.design }}
+        HABITAT_VERSION: ${{ inputs.version }}
+        CHANGED_ONLY: ${{ inputs.changed-only }}
+        FAIL_ON_PROBLEMS: ${{ inputs.fail-on-problems }}
+        BASE_REF: ${{ github.base_ref }}
+        EVENT: ${{ github.event_name }}
+      run: |
+        args=(check $HABITAT_PATHS --design "$HABITAT_DESIGN" --format github)
+        if [ "$CHANGED_ONLY" = "true" ] && [ "$EVENT" = "pull_request" ]; then
+          args+=(--changed-since "origin/$BASE_REF")
+        fi
+        set +e
+        npx -y "@owl-listener/habitat@$HABITAT_VERSION" "${args[@]}"
+        status=$?
+        set -e
+        if [ "$FAIL_ON_PROBLEMS" != "true" ]; then exit 0; fi
+        exit $status

@@ -2,7 +2,7 @@
 
 Use any time, once your habitat files exist. Paste this with your habitat files attached (or the habitat MCP server connected), plus the screen: code, a Figma link, or a screenshot.
 
-If it's code, first run `npx github:Owl-Listener/habitat check <file> --design design` and paste the output too. It catches raw values, unknown tokens, native elements and deprecated components automatically.
+If it's code, first run `npx @owl-listener/habitat check <file> --design design` and paste the output too. It catches raw values, unknown tokens, native elements and deprecated components automatically.
 
 ---
 

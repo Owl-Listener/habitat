@@ -29,7 +29,7 @@ design/research/
     └── sole-trader.md   a kind of person the product serves, grounded in insights
 ```
 
-If the folders do not exist, ask whether to run `npx github:Owl-Listener/habitat init` (it adds the templates without touching existing files), or create them following https://github.com/Owl-Listener/habitat/tree/main/templates. Read the templates and follow their field names exactly.
+If the folders do not exist, ask whether to run `npx @owl-listener/habitat init` (it adds the templates without touching existing files), or create them following https://github.com/Owl-Listener/habitat/tree/main/templates. Read the templates and follow their field names exactly.
 
 ## Step 1: Gather what they have
 
@@ -77,7 +77,7 @@ If the team keeps descriptions of who it serves, write one `research/people/` fi
 
 ## Step 6: Check and hand over
 
-1. Run `npx github:Owl-Listener/habitat validate design`. It checks every insight, warns when a rule cites an insight that does not exist, is retired, or is only a hunch, flags research not reviewed in a year, and warns if a research file seems to contain an email address or phone number.
+1. Run `npx @owl-listener/habitat validate design`. It checks every insight, warns when a rule cites an insight that does not exist, is retired, or is only a hunch, flags research not reviewed in a year, and warns if a research file seems to contain an email address or phone number.
 2. Tell the team how many insights there are, how many rules now cite evidence, and which rules rest only on hunches or on nothing.
 3. Suggest re-running an eval (see `design/evals/`). The same prompt, now with research available through the `get_research` tool, often changes what an agent does in exactly the cases no rule covers.
 4. Remind them research ages: when a new study replaces a finding, mark the old insight `retired` with `supersededBy`, and the validator will point at every rule that still cites it.
