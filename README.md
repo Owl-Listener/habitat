@@ -33,14 +33,14 @@ The difference between those two numbers is the whole idea of habitat, in miniat
 For the ten-minute version, just an AI chat. For the full kit:
 
 - **Node.js 20 or later, for the commands.** The `habitat` command runs on it. Check with `node --version`, and install it from [nodejs.org](https://nodejs.org) if you need to. Never used a terminal? You can skip this: the prompts do the same work without it (see [No terminal?](#no-terminal-use-any-ai) below).
-- **An AI tool.** Claude Code gets the guided skills. Anything else (ChatGPT, Gemini, Cursor) can use the copy-paste prompts.
+- **An AI tool.** Claude Code, Codex, Cursor, GitHub Copilot and Gemini CLI get the guided skills. Windsurf, ChatGPT or anything else can use the copy-paste prompts. See [Works with your agent](#works-with-your-agent).
 - **Your Figma library, connected to your AI** through the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server). No connection? Screenshots and a variables export work too, just more slowly.
 
 You don't need to install habitat itself. Every command below runs it straight from npm with `npx`.
 
 ## Quick start
 
-### With a terminal and Claude Code
+### With a terminal
 
 In your project folder:
 
@@ -48,13 +48,7 @@ In your project folder:
 npx @owl-listener/habitat init
 ```
 
-Then, in Claude Code:
-
-```
-/habitat-extract
-```
-
-Give it your Figma file link, and it takes you through everything else.
+Then start the guided extraction. In Claude Code, type `/habitat-extract`. In Codex, Cursor, Copilot or Gemini CLI, ask: "Use the habitat-extract skill". Give it your Figma file link, and it takes you through everything else.
 
 ### No terminal? Use any AI
 
@@ -73,7 +67,7 @@ Here's what it looks like for Sam, a design lead with a Figma library and a Reac
 
 ### 1. Set up (five minutes)
 
-Sam runs `npx @owl-listener/habitat init` in the project folder. That creates a `design/` folder with the templates, installs four Claude Code skills, and adds a short block of always-on rules to `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`. Claude Code, Cursor and other agents that support these files read them before every task. They say: read the design system first, never hard-code values, and if something's missing, say so instead of inventing a lookalike.
+Sam runs `npx @owl-listener/habitat init` in the project folder. That creates a `design/` folder with the templates, installs the four guided skills where Claude Code and the other agents look for them, and adds a short block of always-on rules to `AGENTS.md` (the file most agents read), plus `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md` and `GEMINI.md`. Agents read these before every task. If the team only uses some of those tools, `--agents claude,cursor` keeps it to those. They say: read the design system first, never hard-code values, and if something's missing, say so instead of inventing a lookalike.
 
 It never overwrites anything. Run it twice and nothing changes.
 
@@ -124,8 +118,10 @@ If the team keeps evidence-based descriptions of who it serves, those can go in 
 ### 6. Switch it on for the team
 
 ```bash
-claude mcp add habitat -- npx -y @owl-listener/habitat serve design
+npx @owl-listener/habitat connect
 ```
+
+That shows how to connect habitat to each agent: one command for Claude Code and Codex, and a few lines of settings for Cursor, Copilot, Gemini CLI and Windsurf. `connect cursor --write` adds it to the project's settings for you.
 
 Now, when anyone asks an agent to build UI, it reads the principles, looks up the right components and what the team knows about the people it's building for, checks its own code before handing it over, and says "there's no date picker in the system" instead of quietly building one.
 
@@ -150,12 +146,12 @@ The walkthrough above, as a list you can work through on your own design system.
 ### Before you start (about half an hour)
 
 - [ ] **Install Node.js 20 or later.** Done when `node --version` shows v20 or higher.
-- [ ] **Connect the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server) to Claude Code.** Done when Claude can read your library file from its link.
+- [ ] **Connect the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server) to your AI tool.** Done when it can read your library file from its link.
 - [ ] **Optional: score your Figma file with [agent-ready](https://github.com/Owl-Listener/agent-ready)** and fix the worst of it first, such as detached instances, hard-coded colours or missing auto layout. Done when the biggest gaps are closed, or you've decided to live with them for now.
 
 ### Set up (five minutes)
 
-- [ ] **Run `npx @owl-listener/habitat init`** in your project folder. Done when you have a `design/` folder, four skills in `.claude/skills/`, and the habitat rules in `AGENTS.md`, `CLAUDE.md` and `.cursor/rules/habitat.mdc`.
+- [ ] **Run `npx @owl-listener/habitat init`** in your project folder. Done when you have a `design/` folder, the four skills in `.claude/skills/` and `.agents/skills/`, and the habitat rules in `AGENTS.md` and your agents' own files.
 
 ### See the problem first (about half an hour)
 
@@ -183,7 +179,7 @@ The walkthrough above, as a list you can work through on your own design system.
 
 - [ ] **Run `npx @owl-listener/habitat validate design`** and clear the errors.
 - [ ] **Answer the remaining TODOs**, or leave the ones you choose to, and set `status: reviewed` and `lastReviewed` on each file you've checked.
-- [ ] **Connect it to Claude Code:** `claude mcp add habitat -- npx -y @owl-listener/habitat serve design`
+- [ ] **Connect it to your agent:** `npx @owl-listener/habitat connect` shows how for each one. Done when your agent can call `get_principles`.
 - [ ] **Commit `design/` and the rules files**, so your whole team and their agents get them. Done when a teammate asks Claude for a screen and it builds from your system, or tells them what's missing instead of inventing it.
 
 ### Keep it true (as you go)
@@ -196,7 +192,7 @@ The walkthrough above, as a list you can work through on your own design system.
 
 ### If you only have an afternoon
 
-Install Node, connect Figma, run `init`, do the baseline, write `DESIGN.md`, run the baseline again, and connect it to Claude Code. That's enough to get output that is recognisably yours, and to see for yourself whether the rest is worth doing.
+Install Node, connect Figma, run `init`, do the baseline, write `DESIGN.md`, run the baseline again, and connect it to your agent. That's enough to get output that is recognisably yours, and to see for yourself whether the rest is worth doing.
 
 ## What you end up with
 
@@ -213,9 +209,11 @@ your-project/
 │   │   ├── insights/      one finding per file, with its evidence and confidence
 │   │   └── people/        optional: the kinds of people you serve
 │   └── evals/             each test run: what the AI got wrong, and what fixed it
-├── AGENTS.md              the always-on rules (added to your existing file)
-├── CLAUDE.md
-└── .cursor/rules/habitat.mdc
+├── AGENTS.md              the always-on rules, read by most agents (added to your existing file)
+├── CLAUDE.md, GEMINI.md, .github/copilot-instructions.md, .cursor/rules/habitat.mdc
+│                          the same rules, for agents with a file of their own
+├── .claude/skills/        the four skills, for Claude Code
+└── .agents/skills/        the same skills, for Codex, Cursor, Copilot and Gemini CLI
 ```
 
 Each component file opens with a structured contract: what it's for, when to use each variant, its states, anatomy and layout, which tokens it uses, accessibility, and the things it must never do, each with a because, and the research it rests on where there is some. Your notes go underneath, in plain prose. Each flow file does the same for a journey: its screens and the components on them, the steps between them and when each is allowed, what happens when things go wrong, and what never to do along the way. Have a look at the worked example in [`examples/design`](examples/design) to see a finished set.
@@ -238,12 +236,64 @@ Put `npx @owl-listener/habitat` in front of each one. When an agent is connected
 
 ## The skills and prompts
 
-| For Claude Code | For any other AI | When |
+| As a skill | As prompts, for any AI | When |
 | --- | --- | --- |
-| `/habitat-extract` | [prompts 0 to 4](prompts), with 2b for journeys | Writing your system down for the first time |
-| `/habitat-research` | [research.md](prompts/research.md) | When you have user research to bring in |
-| `/habitat-review` | [review.md](prompts/review.md) | Whenever you want a screen critiqued against your rules |
-| `/habitat-refresh` | [refresh.md](prompts/refresh.md) | When your Figma library changes |
+| `habitat-extract` | [prompts 0 to 4](prompts), with 2b for journeys | Writing your system down for the first time |
+| `habitat-research` | [research.md](prompts/research.md) | When you have user research to bring in |
+| `habitat-review` | [review.md](prompts/review.md) | Whenever you want a screen critiqued against your rules |
+| `habitat-refresh` | [refresh.md](prompts/refresh.md) | When your Figma library changes |
+
+## Works with your agent
+
+habitat isn't tied to one AI. The design files are plain Markdown, the rules go where each agent looks, and the MCP server speaks an open standard.
+
+| Agent | Always-on rules | Guided skills | Connect the MCP server |
+| --- | --- | --- | --- |
+| Claude Code | `CLAUDE.md` (imports `AGENTS.md`) | `.claude/skills/`, run as `/habitat-extract` | `claude mcp add habitat -- npx -y @owl-listener/habitat serve design` |
+| OpenAI Codex | `AGENTS.md` | `.agents/skills/` | `codex mcp add habitat -- npx -y @owl-listener/habitat serve /full/path/to/design` |
+| Cursor | `.cursor/rules/habitat.mdc` | `.agents/skills/` | `npx @owl-listener/habitat connect cursor --write` |
+| GitHub Copilot (VS Code) | `.github/copilot-instructions.md` | `.agents/skills/` | `npx @owl-listener/habitat connect copilot --write` |
+| Gemini CLI | `GEMINI.md` | `.agents/skills/` | `npx @owl-listener/habitat connect gemini --write` |
+| Windsurf | `AGENTS.md` | use the [prompts](prompts) | add it to `~/.codeium/windsurf/mcp_config.json` (see below) |
+
+In the agents other than Claude Code, start a skill by asking for it by name: "Use the habitat-extract skill".
+
+`npx @owl-listener/habitat connect` prints the exact setup for every agent, with your folder's path filled in. `connect <agent> --write` adds habitat to that agent's settings file in your project. It keeps anything already there, and leaves alone a file it can't read safely. Codex and Windsurf keep their settings outside the project, so for those it shows what to add. Any other agent that supports MCP can run `npx -y @owl-listener/habitat serve /full/path/to/design`.
+
+<details>
+<summary>The settings, if you'd rather add them by hand</summary>
+
+Cursor, in `.cursor/mcp.json`:
+
+```json
+{ "mcpServers": { "habitat": { "command": "npx", "args": ["-y", "@owl-listener/habitat", "serve", "${workspaceFolder}/design"] } } }
+```
+
+GitHub Copilot in VS Code, in `.vscode/mcp.json`:
+
+```json
+{ "servers": { "habitat": { "type": "stdio", "command": "npx", "args": ["-y", "@owl-listener/habitat", "serve", "${workspaceFolder}/design"] } } }
+```
+
+Gemini CLI, in `.gemini/settings.json`:
+
+```json
+{ "mcpServers": { "habitat": { "command": "npx", "args": ["-y", "@owl-listener/habitat", "serve", "/full/path/to/design"] } } }
+```
+
+Codex, in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.habitat]
+command = "npx"
+args = ["-y", "@owl-listener/habitat", "serve", "/full/path/to/design"]
+```
+
+Windsurf, in `~/.codeium/windsurf/mcp_config.json`: the same as Gemini CLI's.
+
+</details>
+
+Agents move their settings around more often than anything else here. If one of these stops working, [open an issue](https://github.com/Owl-Listener/habitat/issues) and I'll update it.
 
 ## In pull requests and your editor
 
@@ -302,7 +352,7 @@ Put together with agent-ready, the whole loop looks like this: fix the structure
 ```
 habitat/
 ├── templates/          the blank files that init copies into your project
-├── skills/             the four Claude Code skills
+├── skills/             the four skills (Agent Skills format)
 ├── prompts/            the same processes as copy-paste prompts, for any AI
 ├── schema/             what valid component, flow, tokens and research files look like
 ├── bin/ and lib/       the habitat command

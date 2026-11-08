@@ -46,7 +46,7 @@ Read the templates in `design/` before writing, and follow their field names exa
    If the Figma file is too messy to trust, or there isn't one, offer to start from the live product instead: screenshots of real screens, or the site's URL if you can read it. Read the colours, type, spacing and components from what ships, mark everything you infer as `TODO confirm:`, and say plainly that the source is the product, not the library. The interview is the same either way.
 3. If the project also has Storybook (with the Storybook MCP addon) or a shadcn registry (with the shadcn MCP), use them alongside Figma: they say what exists in code and which props it really takes.
 4. Ask: **"Which two or three user journeys matter most in your product?"** For example, "send an invoice" or "invite a teammate". Write them into the Core journeys section of `DESIGN.md`. They decide which components to document first, and they are what the evals test. Starting from journeys rather than a list of components keeps the work small and tied to real screens.
-5. Ask whether the team has user research. If it does, suggest running `/habitat-research` after this extraction (or before, if the research is fresh), so the rules you write can cite the evidence behind them.
+5. Ask whether the team has user research. If it does, suggest running the `habitat-research` skill after this extraction (or before, if the research is fresh), so the rules you write can cite the evidence behind them.
 
 ## Step 1: Baseline eval
 
@@ -168,7 +168,7 @@ For interaction rules, which span many components and are where accessibility us
 
 ## Step 6: Calibrate
 
-Re-run the baseline prompt, word for word, this time with the habitat files (through the MCP server, or by reading `design/`). Show the result and ask: "What's wrong with this?" If you wrote code, also run `npx @owl-listener/habitat check <files> --design design`: its count needs no judgement, so it is the most comparable number between runs. For a thorough critique, `/habitat-review` goes through every rule.
+Re-run the baseline prompt, word for word, this time with the habitat files (through the MCP server, or by reading `design/`). Show the result and ask: "What's wrong with this?" If you wrote code, also run `npx @owl-listener/habitat check <files> --design design`: its count needs no judgement, so it is the most comparable number between runs. For a thorough critique, the `habitat-review` skill goes through every rule.
 
 For every problem the designer names, find the missing rule and add it to the right file: a component's `antiPatterns`, a variant's `whenToUse`, a flow's `unhappyPaths` or `condition`, an interaction rule, or a principle in `DESIGN.md`. Record the run in a new `evals/` file with its problem count, and add a row to the calibration log in `DESIGN.md`. Run it again.
 
@@ -182,7 +182,7 @@ The drop in problems, baseline to latest run, is the measure of what the documen
    If the components exist in code, also run `npx @owl-listener/habitat parity design --code <component folder>`. Missing implementations and components with no contract are what make an agent build screens that look right from parts that don't exist.
 2. Tell the designer how many TODOs remain and in which files. A file becomes `status: reviewed` (with `lastReviewed` set to the date) only when the designer says every field is right; never set it yourself.
 3. List the Figma issues you found: unbound values, naming inconsistencies, missing states, components with no code counterpart.
-4. Check that the always-on rules are in place (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/habitat.mdc`); `init` adds them.
+4. Check that the always-on rules are in place: `AGENTS.md`, plus the files of the agents the team uses (`CLAUDE.md`, `.cursor/rules/habitat.mdc`, `.github/copilot-instructions.md`, `GEMINI.md`). `init` adds them.
 5. Show them how to serve the folder to their coding agent:
-   `claude mcp add habitat -- npx -y @owl-listener/habitat serve design`
-6. Tell them what comes next: `/habitat-research` to ground the rules in user research, `/habitat-review` to critique any screen against the system, and `/habitat-refresh` whenever the Figma library changes.
+   `npx @owl-listener/habitat connect` prints the setup for Claude Code, Cursor, Copilot, Codex, Gemini CLI and Windsurf; `connect <agent> --write` adds it to that agent's project config. In Claude Code the quickest is `claude mcp add habitat -- npx -y @owl-listener/habitat serve design`.
+6. Tell them what comes next: the `habitat-research` skill to ground the rules in user research, the `habitat-review` skill to critique any screen against the system, and the `habitat-refresh` skill whenever the Figma library changes.

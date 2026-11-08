@@ -1,6 +1,6 @@
 {
   "name": "@owl-listener/habitat",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Make your own design system legible to AI agents: templates, a guided Figma + AI extraction, a validator, code checks, token import and export, automated evals, and an MCP server.",
   "type": "module",
   "bin": {
