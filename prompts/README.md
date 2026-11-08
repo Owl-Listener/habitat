@@ -1,6 +1,8 @@
 # Prompts for any AI
 
-The same process as the Claude Code skill, as prompts you paste into any AI tool (Claude, ChatGPT, Gemini, Cursor). Run them in order, in one conversation.
+The same process as the Claude Code skill, as prompts you paste into any AI tool (Claude, ChatGPT, Gemini, Cursor). Run them in order, in one conversation. You don't need a terminal or anything installed.
+
+New to this? Start with [quick-start.md](quick-start.md): ten minutes, one screen, a before and an after.
 
 | Prompt | What it produces | What to give the AI |
 | --- | --- | --- |
@@ -25,7 +27,7 @@ The method is a loop: ask an AI for a real screen, see what it gets wrong, write
 
 Attach the matching template from [`../templates`](../templates) to each prompt, so the AI copies its exact format. Run 2-component once per component, starting with the ones your core journeys use, and 2b-flow once per core journey.
 
-When you are done, check your files:
+Save each file the AI gives you into a folder called `design`. When you are done, and if you have Node.js, check your files:
 
 ```bash
 npx @owl-listener/habitat validate design

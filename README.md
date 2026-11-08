@@ -18,15 +18,29 @@ So habitat splits the work in two. **The AI reads the facts from Figma. You supp
 
 Then it tests the result. Ask an AI to build a real screen with no context, look at what it gets wrong, write down the missing rule, and run it again. Each pass exposes another piece of judgement the system needs, and the drop in problems tells you what your documentation is worth.
 
+## Try it in ten minutes
+
+You don't need to install anything to see whether this is worth your time. Open any AI chat (Claude, ChatGPT, Gemini) and follow [the ten-minute version](prompts/quick-start.md):
+
+1. **Before.** Ask the AI to design one real screen from your product with no guidance, and count what's wrong with it.
+2. **Write some of it down.** Answer five questions about your product, your principles and your brand colour. The AI turns your answers into a short `DESIGN.md`, in your words, and marks anything you didn't give a reason for as `TODO`.
+3. **After.** Ask for the same screen again with that file, and count again.
+
+The difference between those two numbers is the whole idea of habitat, in miniature. Keep the file: paste it into a Claude Project or a custom GPT and every screen you ask for starts from your judgement. Everything below is how to go further.
+
 ## What you'll need
 
-- **Node.js 20 or later.** The `habitat` command runs on it. Check with `node --version`, and install it from [nodejs.org](https://nodejs.org) if you need to.
+For the ten-minute version, just an AI chat. For the full kit:
+
+- **Node.js 20 or later, for the commands.** The `habitat` command runs on it. Check with `node --version`, and install it from [nodejs.org](https://nodejs.org) if you need to. Never used a terminal? You can skip this: the prompts do the same work without it (see [No terminal?](#no-terminal-use-any-ai) below).
 - **An AI tool.** Claude Code gets the guided skills. Anything else (ChatGPT, Gemini, Cursor) can use the copy-paste prompts.
 - **Your Figma library, connected to your AI** through the [Figma MCP server](https://help.figma.com/hc/en-us/articles/39216419318551-Get-started-with-the-Figma-MCP-server). No connection? Screenshots and a variables export work too, just more slowly.
 
 You don't need to install habitat itself. Every command below runs it straight from npm with `npx`.
 
 ## Quick start
+
+### With a terminal and Claude Code
 
 In your project folder:
 
@@ -40,7 +54,18 @@ Then, in Claude Code:
 /habitat-extract
 ```
 
-Give it your Figma file link, and it takes you through everything else. Using a different AI? Open the [prompts](prompts) and paste them in order.
+Give it your Figma file link, and it takes you through everything else.
+
+### No terminal? Use any AI
+
+The same process works as copy-paste prompts in any AI chat, with nothing to install. It's slower, because you do the saving and checking yourself, but you get the same files.
+
+1. **Download the templates.** Open the [templates folder](templates), open each file, and use the download button (or copy the text into a file of the same name). Keep them together in a folder called `design`.
+2. **Work through the [prompts](prompts) in order**, in one conversation. Each one says which template to attach. If your AI can't reach Figma, attach screenshots of your components and an export of your variables instead.
+3. **Save each file the AI gives you** into your `design` folder, replacing the template.
+4. **Give the folder to your AI.** Add the files to a Claude Project or a custom GPT, or hand the folder to whoever sets up your team's coding agent. When they connect it with the habitat commands, nothing needs redoing.
+
+Not sure yet? Start with [the ten-minute version](prompts/quick-start.md).
 
 ## A walkthrough
 
@@ -116,7 +141,7 @@ A design system keeps growing, and documentation that no longer matches it is wo
 
 ### Or start smaller
 
-Not ready for all of that? Fill in `design/DESIGN.md` on its own (your product, your core journeys, your principles and how forms, errors and dialogs should behave) and run a few rounds of steps 2 and 4. It's an afternoon's work, and it gets you AI output that is recognisably yours before you've documented a single component. Add component files later, for whatever keeps going wrong.
+Not ready for all of that? Start with [the ten-minute version](prompts/quick-start.md). Then fill in `design/DESIGN.md` on its own (your product, your core journeys, your principles and how forms, errors and dialogs should behave) and run a few rounds of steps 2 and 4. It's an afternoon's work, and it gets you AI output that is recognisably yours before you've documented a single component. Add component files later, for whatever keeps going wrong.
 
 ## Your checklist
 
