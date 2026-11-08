@@ -1,6 +1,6 @@
 # Prompts for any AI
 
-The same process as the Claude Code skill, as prompts you paste into any AI tool (Claude, ChatGPT, Gemini, Cursor). Run them in order, in one conversation. You don't need a terminal or anything installed.
+The same process as the habitat skills, as prompts you paste into any AI tool (Claude, ChatGPT, Gemini, Cursor). Run them in order, in one conversation. You don't need a terminal or anything installed.
 
 New to this? Start with [quick-start.md](quick-start.md): ten minutes, one screen, a before and an after.
 

@@ -383,3 +383,52 @@ test("export writes a DESIGN.md in Google's format, and never overwrites a hand-
   assert.match(habitat(["export", example], dir).out, /was not made by habitat/);
   assert.match(habitat(["export", example, "--out", join(example, "DESIGN.md")]).out, /habitat's own file/);
 });
+
+test("init sets up every agent by default, and --agents keeps it to the ones named", () => {
+  const all = scratch();
+  habitat(["init"], all);
+  for (const f of ["AGENTS.md", "CLAUDE.md", "GEMINI.md", ".github/copilot-instructions.md", ".cursor/rules/habitat.mdc"]) {
+    assert.ok(existsSync(join(all, f)), f);
+  }
+  for (const folder of [".claude/skills", ".agents/skills"]) {
+    assert.ok(existsSync(join(all, folder, "habitat-extract/SKILL.md")), folder);
+  }
+  assert.match(readFileSync(join(all, "GEMINI.md"), "utf8"), /habitat:start/);
+
+  const some = scratch();
+  const r = habitat(["init", "--agents", "cursor,copilot"], some);
+  assert.match(r.out, /Set up for: Cursor, GitHub Copilot/);
+  assert.ok(existsSync(join(some, "AGENTS.md")), "AGENTS.md is always written");
+  assert.ok(existsSync(join(some, ".agents/skills/habitat-review/SKILL.md")));
+  for (const f of ["CLAUDE.md", "GEMINI.md", ".claude"]) assert.ok(!existsSync(join(some, f)), `${f} should not be created`);
+
+  const typo = scratch();
+  assert.match(habitat(["init", "--agents", "cursr"], typo).out, /unknown agent cursr/);
+  assert.ok(!existsSync(join(typo, "design")), "nothing is created when the agent list is wrong");
+});
+
+test("connect prints each agent's setup, and --write adds habitat without losing anything", () => {
+  const dir = scratch();
+  const all = habitat(["connect"], dir);
+  for (const name of ["Claude Code", "Cursor", "GitHub Copilot", "OpenAI Codex", "Gemini CLI", "Windsurf"]) assert.match(all.out, new RegExp(name));
+  assert.match(all.out, /codex mcp add habitat -- npx -y @owl-listener\/habitat serve \/.+\/design/, "global configs get the full path");
+
+  writeFileSync(join(dir, ".mcp.json"), JSON.stringify({ mcpServers: { figma: { url: "https://example.com" } } }));
+  assert.match(habitat(["connect", "claude", "--write"], dir).out, /added/);
+  const claude = JSON.parse(readFileSync(join(dir, ".mcp.json"), "utf8"));
+  assert.ok(claude.mcpServers.figma, "other servers are kept");
+  assert.deepEqual(claude.mcpServers.habitat.args, ["-y", "@owl-listener/habitat", "serve", "design"]);
+  assert.match(habitat(["connect", "claude", "--write"], dir).out, /already connected/);
+
+  habitat(["connect", "copilot", "--write"], dir);
+  const vscode = JSON.parse(readFileSync(join(dir, ".vscode/mcp.json"), "utf8"));
+  assert.equal(vscode.servers.habitat.type, "stdio");
+  assert.equal(vscode.servers.habitat.args.at(-1), "${workspaceFolder}/design");
+
+  writeFileSync(join(dir, ".vscode/mcp.json"), "// my servers\n{}\n");
+  const refused = habitat(["connect", "copilot", "--write"], dir);
+  assert.ok(!refused.ok);
+  assert.match(refused.out, /not plain JSON/);
+  assert.equal(readFileSync(join(dir, ".vscode/mcp.json"), "utf8"), "// my servers\n{}\n");
+  assert.match(habitat(["connect", "codex", "--write"], dir).out, /outside the project/);
+});

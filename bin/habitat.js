@@ -2,8 +2,10 @@
 /**
  * habitat command line.
  *
- *   habitat init [dir]                 scaffold a design folder (default: ./design),
+ *   habitat init [dir] [--agents claude,cursor,...]
+ *                                      scaffold a design folder (default: ./design),
  *                                      install the skills and the agent rules
+ *   habitat connect [agent] [--write]  how to connect an agent to the MCP server
  *   habitat validate [dir] [--strict]  check the folder, list open TODOs
  *   habitat check <paths...> [--design dir] [--fix] [--changed-since ref] [--format github]
  *                                      check UI code against the system
@@ -39,6 +41,7 @@ for (let i = 0; i < args.length; i++) {
   else if (args[i] === "--judge") flags.judge = true;
   else if (args[i] === "--force") flags.force = true;
   else if (args[i] === "--fix") flags.fix = true;
+  else if (args[i] === "--write") flags.write = true;
   else if (args[i].startsWith("--")) flags[args[i].slice(2)] = args[++i];
   else paths.push(args[i]);
 }
@@ -98,6 +101,14 @@ function addRules(to, { header = "", whenMissing } = {}) {
 
 switch (command) {
   case "init": {
+    const { AGENTS, parseAgents } = await import("../lib/agents.js");
+    let agents;
+    try {
+      agents = parseAgents(flags.agents);
+    } catch (err) {
+      console.log(`habitat: ${err.message}`);
+      process.exit(1);
+    }
     console.log(`Setting up ${shortDir}/\n`);
     place("templates/DESIGN.md", join(dir, "DESIGN.md"));
     place("templates/tokens.md", join(dir, "tokens.md"));
@@ -106,30 +117,61 @@ switch (command) {
     place("templates/eval.md", join(dir, "evals", "_TEMPLATE.md"));
     place("templates/insight.md", join(dir, "research", "insights", "_TEMPLATE.md"));
     place("templates/person.md", join(dir, "research", "people", "_TEMPLATE.md"));
-    for (const skill of SKILLS) place(`skills/${skill}/SKILL.md`, resolve(`.claude/skills/${skill}/SKILL.md`));
-    // AGENTS.md is read by Cursor, Codex and others. Claude Code reads
-    // CLAUDE.md, which can pull AGENTS.md in with an @ import.
-    addRules(resolve("AGENTS.md"));
-    const claude = resolve("CLAUDE.md");
-    if (existsSync(claude) && readFileSync(claude, "utf8").includes("@AGENTS.md")) {
-      console.log(`  kept     ${claude} (already imports AGENTS.md)`);
-    } else {
-      addRules(claude, { whenMissing: "@AGENTS.md\n" });
+    // The skills, once per folder: Claude Code reads .claude/skills, and
+    // Codex, Cursor, Copilot and Gemini CLI share .agents/skills.
+    for (const folder of new Set(agents.map((a) => AGENTS[a].skills).filter(Boolean))) {
+      for (const skill of SKILLS) place(`skills/${skill}/SKILL.md`, resolve(folder, skill, "SKILL.md"));
     }
-    addRules(resolve(".cursor/rules/habitat.mdc"), {
-      header: "---\ndescription: How to use this project's design system\nalwaysApply: true\n---\n\n",
-    });
+    // AGENTS.md is the shared file most agents read, so it is always written.
+    addRules(resolve("AGENTS.md"));
+    for (const id of agents) {
+      const rules = AGENTS[id].rules;
+      if (!rules) continue;
+      const to = resolve(rules.file);
+      // Claude Code's CLAUDE.md pulls AGENTS.md in with an @ import, rather than a second copy.
+      if (rules.importsAgentsMd && existsSync(to) && readFileSync(to, "utf8").includes("@AGENTS.md")) {
+        console.log(`  kept     ${to} (already imports AGENTS.md)`);
+      } else {
+        addRules(to, { header: rules.header ?? "", ...(rules.importsAgentsMd && { whenMissing: "@AGENTS.md\n" }) });
+      }
+    }
     console.log(`
+Set up for: ${agents.map((a) => AGENTS[a].name).join(", ")}. (Choose with --agents, e.g. --agents claude,cursor.)
+
 Next:
   1. Connect the Figma MCP server to your AI tool (see the habitat README).
-  2. In Claude Code, run /habitat-extract and give it your Figma file link.
-     Using another AI? Paste the prompts from:
+  2. Write your system down. In Claude Code, run /habitat-extract. In Codex,
+     Cursor, Copilot or Gemini CLI, ask: "Use the habitat-extract skill".
+     Anything else? Paste the prompts from:
      https://github.com/Owl-Listener/habitat/tree/main/prompts
   3. Check your progress:  npx @owl-listener/habitat validate ${shortDir}
-  4. Serve it to your agent:
-     claude mcp add habitat -- npx -y @owl-listener/habitat serve ${shortDir}
-  5. Have user research? /habitat-research turns it into insights your rules can cite.
-  6. Later: /habitat-review to critique a screen, /habitat-refresh when Figma changes.`);
+  4. Connect habitat to your agent, so it reads your system while it works:
+     npx @owl-listener/habitat connect          (shows how, for each agent)
+  5. Have user research? The habitat-research skill turns it into insights your rules can cite.
+  6. Later: habitat-review to critique a screen, habitat-refresh when Figma changes.`);
+    break;
+  }
+  case "connect": {
+    const { AGENTS, AGENT_IDS, connectInstructions, writeMcpConfig } = await import("../lib/agents.js");
+    const [agent] = paths;
+    if (agent && !AGENTS[agent]) {
+      console.log(`habitat: unknown agent "${agent}"; choose from ${AGENT_IDS.join(", ")}`);
+      process.exit(1);
+    }
+    const designDir = resolve(flags.design || "design");
+    const where = { absolute: designDir, relative: relative(process.cwd(), designDir) || "." };
+    if (flags.write) {
+      if (!agent) {
+        console.log("habitat: name the agent to write for, e.g. habitat connect cursor --write");
+        process.exit(1);
+      }
+      const r = writeMcpConfig(agent, where);
+      console.log(r.ok ? `  ${r.message}` : `habitat: ${r.message}\n\n${connectInstructions(agent, where)}`);
+      process.exit(r.ok ? 0 : 1);
+    }
+    console.log(`Connect the habitat MCP server, so your agent can read ${where.relative}/ while it works.\n`);
+    console.log((agent ? [agent] : AGENT_IDS).map((a) => connectInstructions(a, where)).join("\n\n"));
+    console.log(`\nAny other agent that supports MCP: run  npx -y @owl-listener/habitat serve ${designDir}`);
     break;
   }
   case "validate": {
@@ -313,7 +355,8 @@ Needs an Anthropic API key in ANTHROPIC_API_KEY (or an \`ant auth login\` profil
   default:
     console.log(`habitat: make your design system legible to AI agents
 
-  habitat init [dir]                        scaffold a design folder (default ./design)
+  habitat init [dir] [--agents list]        scaffold a design folder (default ./design)
+  habitat connect [agent] [--write]         connect an agent to habitat over MCP
   habitat validate [dir] [--strict]         check it and list open TODOs
   habitat check <paths...> [--design dir]   check UI code against the system
   habitat parity [dir] [--code path]        check the contracts match the code

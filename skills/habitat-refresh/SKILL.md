@@ -28,8 +28,8 @@ Read `design/tokens.md`, every file in `design/components/` and every file in `d
 Use the Figma MCP tools (`get_metadata`, `get_variable_defs`, `get_design_context`, `search_design_system`):
 
 - **Tokens:** read the variables again. Compare names, values, aliases and modes with `tokens.md`. If the designer can export the variables as W3C design tokens JSON, `npx @owl-listener/habitat tokens import <file.json…> --design design --dry-run` lists every change without touching the file; run it again without `--dry-run` to apply the facts. It never touches `meaning`, `useFor` or `avoid`.
-- **Styles:** read the paint, text and effect styles again (the `use_figma` snippet in `/habitat-extract`, step 2b) and compare them with the tokens that have a `figma.style`.
-- **Flows:** for each file in `flows/`, read the prototype's connections again on its page (the `use_figma` snippet in `/habitat-extract`, step 4) and compare screens and transitions.
+- **Styles:** read the paint, text and effect styles again (the `use_figma` snippet in the `habitat-extract` skill, step 2b) and compare them with the tokens that have a `figma.style`.
+- **Flows:** for each file in `flows/`, read the prototype's connections again on its page (the `use_figma` snippet in the `habitat-extract` skill, step 4) and compare screens and transitions.
 - **Each component with a `figma.nodeId`:** read its properties, variants, states, layers and auto layout, and its variable bindings. Compare with the file, field by field.
 - **The whole library:** list its components, and find any that have no file in `components/`.
 
