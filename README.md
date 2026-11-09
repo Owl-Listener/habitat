@@ -308,7 +308,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Owl-Listener/habitat@v0.3.0
+      - uses: Owl-Listener/habitat@v0.4.0
         with:
           paths: src
           design: design
@@ -398,7 +398,7 @@ If you try habitat on your own design system, I'd love to hear what your before 
 2. On GitHub, go to Releases and draft a new release. Give it a tag that matches the version with a `v` in front (`v0.4.0`), targeting main, and publish it.
 3. GitHub runs the tests and publishes the package to npm. It stops if the tag and the version don't match. You can follow it under the Actions tab, and the new version is usually on npm within a few minutes.
 
-Then update the `@v0.3.0` in the GitHub Action example above to the new tag.
+Then update the `@v0.4.0` in the GitHub Action example above to the new tag.
 
 ## Licence
 
