@@ -294,7 +294,8 @@ Check it with:  npx @google/design.md lint ${relative(process.cwd(), out)}`);
   --journey name       the core journey it tests, used to name the report
   --runs n             runs per condition (default 3; AI output varies)
   --judge              also have Claude review each result against your rules
-  --only baseline|habitat
+  --only baseline,facts,habitat
+                       which conditions to run (default: all three)
   --model id           default claude-opus-5-5
   --dry-run            show what would run, without calling the API
 
@@ -308,29 +309,40 @@ Needs an Anthropic API key in ANTHROPIC_API_KEY (or an \`ant auth login\` profil
       console.log("habitat: --runs must be a whole number, 1 or more");
       process.exit(1);
     }
-    if (flags.only && !["baseline", "habitat"].includes(flags.only)) {
-      console.log("habitat: --only must be baseline or habitat");
+    const { loadDesign } = await import("../lib/habitat.js");
+    const { evalPlan, runEval, writeEval, summarise, hasAnthropicCredentials, CONDITIONS, DEFAULT_MODEL } = await import("../lib/eval.js");
+    const only = flags.only?.split(",").map((c) => c.trim()).filter(Boolean);
+    if (only?.some((c) => !CONDITIONS.includes(c))) {
+      console.log(`habitat: --only takes ${CONDITIONS.join(", ")}, separated by commas`);
       process.exit(1);
     }
-    const { loadDesign } = await import("../lib/habitat.js");
-    const { evalPlan, runEval, writeEval, summarise, DEFAULT_MODEL } = await import("../lib/eval.js");
     const design = loadDesign(dir);
-    const options = { prompt, runs, judge: flags.judge, only: flags.only, model: flags.model ?? DEFAULT_MODEL };
+    const options = { prompt, runs, judge: flags.judge, only, model: flags.model ?? DEFAULT_MODEL };
     const plan = evalPlan(design, options);
     console.log(
-      `Eval${flags.journey ? ` "${flags.journey}"` : ""}: ${plan.conditions.join(" and ")}, ${runs} run(s) each, ` +
+      `Eval${flags.journey ? ` "${flags.journey}"` : ""}: ${plan.conditions.length > 1 ? `${plan.conditions.slice(0, -1).join(", ")} and ${plan.conditions.at(-1)}` : plan.conditions[0]}, ${runs} run(s) each, ` +
         `${plan.requests} request(s) to ${options.model}. The design system adds about ${Math.round(plan.contextCharacters / 4).toLocaleString()} tokens to each habitat request.`
     );
     if (flags.dryRun) {
       console.log("Dry run: nothing was sent.");
       break;
     }
+    if (!hasAnthropicCredentials()) {
+      console.log(`habitat: eval needs an Anthropic API key, and none is set.
+  Get one at https://console.anthropic.com, then set it before running:
+    export ANTHROPIC_API_KEY=...        (macOS and Linux)
+    setx ANTHROPIC_API_KEY ...          (Windows; open a new terminal after)
+  Add --dry-run to see what would run without one.`);
+      process.exit(1);
+    }
     const { default: Anthropic } = await import("@anthropic-ai/sdk");
     let result;
     try {
       result = await runEval(design, { ...options, client: new Anthropic(), onProgress: (m) => console.log(`  ${m}`) });
     } catch (err) {
-      if (err instanceof Anthropic.AuthenticationError) console.log("habitat: the Anthropic API key was not accepted. Set ANTHROPIC_API_KEY and try again.");
+      if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError || /authentication|api key|credentials/i.test(err.message)) {
+        console.log("habitat: the Anthropic API key was not accepted, so nothing was run. Check ANTHROPIC_API_KEY and try again.");
+      }
       else console.log(`habitat: ${err.message}`);
       process.exit(1);
     }

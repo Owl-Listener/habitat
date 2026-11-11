@@ -232,25 +232,51 @@ test("eval runs both conditions, counts problems and writes a report", async () 
       },
     },
   };
-  assert.equal(evalPlan(design, { runs: 2, judge: true }).requests, 8);
+  assert.equal(evalPlan(design, { runs: 2, judge: true }).requests, 12);
   const result = await runEval(design, { prompt: "Build the send invoice screen", runs: 2, judge: true, client });
-  assert.equal(sent.length, 8);
+  assert.equal(sent.length, 12);
   assert.ok(sent.every((p) => p.model === "claude-opus-5-5" && p.fallbacks === "default"));
   assert.ok(!sent[0].system.includes("<design-system>"), "the baseline never sees the design system");
+  // The facts-only condition sees the tokens and components, but none of the reasons.
+  const facts = sent.find((p) => !p.output_config.format && p.system.includes("tokens and components are listed below")).system;
+  assert.match(facts, /color\.brand\.default/);
+  assert.match(facts, /name: Button/);
+  for (const reason of ["useFor", "whenToUse", "antiPatterns", "because", "One thing at a time", "INS-001"]) assert.ok(!facts.includes(reason), reason);
   const { reportPath } = writeEval(design, result, { journey: "Send an invoice", date: "2026-11-07" });
   const report = readFileSync(reportPath, "utf8");
   assert.match(report, /\| baseline \| 2 \| 1 \| 3 \|/);
   assert.match(report, /\| habitat \| 0 \| 0 \| 0 \|/);
-  assert.match(report, /0 with habitat, down from 3 without it \(100% fewer\)/);
+  assert.match(report, /\| facts \|/);
+  assert.match(report, /What the reasons add \(facts only → habitat\)/);
+  assert.match(report, /Against nothing at all \(baseline → habitat\):\*\* 0 problems with habitat, against 3 \(100% fewer\)/);
+  assert.match(report, /The facts-only comparison is the fair one/);
   assert.ok(existsSync(join(dir, "design/evals/runs/2026-11-07-send-an-invoice/baseline-1/screen.tsx")));
 });
 
-test("eval explains itself without a prompt, and a dry run sends nothing", () => {
+test("eval explains itself without a prompt, a dry run sends nothing, and no key stops it early", async () => {
   assert.match(habitat(["eval", example]).out, /Usage: habitat eval/);
   const r = habitat(["eval", example, "--prompt", "Build it", "--judge", "--runs", "2", "--dry-run"]);
   assert.ok(r.ok, r.out);
-  assert.match(r.out, /8 request\(s\)/);
+  assert.match(r.out, /baseline, facts and habitat, 2 run\(s\) each, 12 request\(s\)/);
   assert.match(r.out, /Dry run: nothing was sent/);
+  assert.match(habitat(["eval", example, "--prompt", "x", "--only", "facts,habitat", "--dry-run"]).out, /facts and habitat, 3 run\(s\) each, 6 request/);
+
+  // With no credentials anywhere, it says so before sending anything.
+  const home = scratch();
+  const env = { ...process.env, HOME: home };
+  for (const k of ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_PROFILE", "ANTHROPIC_CONFIG_DIR", "ANTHROPIC_FEDERATION_RULE_ID"]) delete env[k];
+  const noKey = spawnSync("node", [cli, "eval", example, "--prompt", "x"], { cwd: home, env, encoding: "utf8" });
+  assert.notEqual(noKey.status, 0);
+  assert.match(noKey.stdout, /needs an Anthropic API key/);
+  assert.doesNotMatch(noKey.stdout, /building/);
+
+  // A rejected key stops at the first request instead of failing every run.
+  const { loadDesign } = await import("../lib/habitat.js");
+  const { runEval } = await import("../lib/eval.js");
+  let calls = 0;
+  const rejecting = { beta: { messages: { stream: () => ({ finalMessage: async () => { calls++; throw Object.assign(new Error("invalid x-api-key"), { status: 401 }); } }) } } };
+  await assert.rejects(runEval(loadDesign(example), { prompt: "x", runs: 3, client: rejecting }), /invalid x-api-key/);
+  assert.equal(calls, 1);
 });
 
 test("the MCP server answers, resolves aliases, serves research and checks code", async (t) => {
@@ -331,6 +357,15 @@ test("the ESLint plugin reports the same problems, and --fix applies only safe f
   const left = result.messages.map((m) => m.message.match(/\((\S+)\)$/)[1]).sort();
   assert.deepEqual(left, ["raw-element", "raw-element", "unknown-token"]);
   assert.equal(habitat.configs.recommended.rules["habitat/design-system"], "warn");
+
+  // The recommended config on its own, with nothing else, reads a .jsx file.
+  const dir = scratch();
+  cpSync(example, join(dir, "design"), { recursive: true });
+  writeFileSync(join(dir, "Screen.jsx"), 'export const Screen = () => <button style={{ padding: "24px" }}>Go</button>;\n');
+  const alone = new ESLint({ cwd: dir, overrideConfigFile: true, overrideConfig: [habitat.configs.recommended] });
+  const [jsx] = await alone.lintFiles(["Screen.jsx"]);
+  assert.ok(!jsx.messages.some((m) => m.fatal), JSON.stringify(jsx.messages));
+  assert.deepEqual(jsx.messages.map((m) => m.message.match(/\((\S+)\)$/)[1]).sort(), ["raw-element", "raw-size"]);
 });
 
 test("check --fix rewrites values with one right token, and --changed-since keeps to changed lines", () => {
