@@ -101,7 +101,13 @@ npx @owl-listener/habitat check src/screens --design design
 
 Eight problems down to one is the evidence. Sam stops when the corrections feel like matters of taste rather than rules.
 
-Once the team has an Anthropic API key, `habitat eval` does the asking and the counting for them. It runs the same prompt several times with and without the design system, counts the problems in each, and can have Claude review each screen against the team's own rules. The numbers land in `design/evals/`, so this month's run can be compared with last month's:
+Once the team has an Anthropic API key, `habitat eval` does the asking and the counting for them. It runs the same prompt several times under three conditions, counts the problems in each, and can have Claude review each screen against the team's own rules:
+
+- **Baseline:** nothing about the design system at all.
+- **Facts only:** the tokens and components (names, values, props, variants), without any of the reasons. Roughly what a Figma file or a component library already gives an agent.
+- **habitat:** the whole design folder.
+
+A baseline that never saw your tokens can't use them, so some of its problems are guaranteed, and a drop from baseline would flatter habitat. The fair comparison is facts only against habitat: same tokens and components, with and without the reasons behind them. That gap is what writing down your judgement is worth, and the report shows both. The numbers land in `design/evals/`, so this month's run can be compared with last month's:
 
 ```bash
 npx @owl-listener/habitat eval design --journey "Send an invoice" --prompt "Build the screen where a user sends an invoice to an existing customer" --judge
@@ -169,14 +175,15 @@ Each component file opens with a structured contract: what it's for, when to use
 
 | Command | What it does |
 | --- | --- |
-| `habitat init [folder]` | Sets up a design folder (`design` by default), the skills and the always-on rules |
+| `habitat init [folder]` | Sets up a design folder (`design` by default), the skills and the always-on rules for every agent. `--agents claude,cursor` keeps it to the tools you use |
 | `habitat validate [folder]` | Checks every file, lists open TODOs, and warns about stale files, missing tokens and broken references. Add `--strict` in CI to fail while any TODO remains |
 | `habitat check <files> --design <folder>` | Checks code for hard-coded colours and sizes, invented tokens, retired components, and native elements where your system has a component, with file, line and the fix where there's one right answer. `--fix` applies those fixes, `--changed-since origin/main` keeps to the lines you changed, and `--format github` annotates a pull request |
 | `habitat parity [folder] --code <folder>` | Reads your component code and checks each documented component exists with the props, values and defaults it promises; lists props and code components nobody documented |
 | `habitat tokens import <files> --design <folder>` | Brings W3C design tokens JSON (one file per mode) into `tokens.md`: updates values, never meanings. Add `--dry-run` to see the changes first |
 | `habitat tokens export [folder]` | Writes your tokens, meanings included, as W3C design tokens JSON for other tools |
 | `habitat export [folder]` | Writes a `DESIGN.md` in [Google's open format](https://github.com/google-labs-code/design.md), so tools that read that format get your tokens, components and rules too. Add `--name` for your product's name |
-| `habitat eval [folder] --prompt "…"` | Runs the prompt with and without your design system, counts the problems, and writes a report to `evals/`. Add `--judge` for a review against your rules, `--dry-run` to see the plan. Needs an Anthropic API key |
+| `habitat eval [folder] --prompt "…"` | Runs the prompt with nothing, with only your tokens and components, and with the whole design folder, counts the problems, and writes a report to `evals/`. Add `--judge` for a review against your rules, `--dry-run` to see the plan. Needs an Anthropic API key |
+| `habitat connect [agent]` | Shows how to connect habitat to Claude Code, Codex, Cursor, Copilot, Gemini CLI or Windsurf, with your folder's path filled in. `--write` adds it to that agent's settings in your project |
 | `habitat serve [folder]` | Serves your design folder to a coding agent over MCP |
 
 Put `npx @owl-listener/habitat` in front of each one. When an agent is connected through `serve`, it gets eight tools: `get_principles` (read first), `list_components`, `get_component`, `get_tokens`, `get_rules`, `get_flows` for how a journey moves between screens, `get_research` for what the team knows about its users, and `check_code` for checking its own work.
@@ -261,13 +268,27 @@ jobs:
           design: design
 ```
 
-**In your editor, and in the linting you already run.** habitat comes with an ESLint plugin that runs the same checks as you type, and `eslint --fix` applies the same safe fixes. In `eslint.config.js`:
+**In your editor, and in the linting you already run.** habitat comes with an ESLint plugin that runs the same checks on your JavaScript and TypeScript as you type, and `eslint --fix` applies the same safe fixes. ESLint doesn't read CSS, so keep `habitat check` (or the GitHub Action) for stylesheets.
+
+Add it to `eslint.config.js`. On its own, this works for `.js` and `.jsx` files:
 
 ```js
 import habitat from "@owl-listener/habitat/eslint";
 
 export default [
   habitat.configs.recommended, // reads ./design
+];
+```
+
+ESLint can't read TypeScript without a parser, so for `.ts` and `.tsx` put one first. If your project already lints TypeScript, add the habitat line to that config. If not, `npm install -D typescript-eslint` and:
+
+```js
+import tseslint from "typescript-eslint";
+import habitat from "@owl-listener/habitat/eslint";
+
+export default [
+  tseslint.configs.base, // lets ESLint read TypeScript, with no rules of its own
+  habitat.configs.recommended,
 ];
 ```
 
