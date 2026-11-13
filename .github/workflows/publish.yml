@@ -3,11 +3,14 @@ name: Publish to npm
 # Runs when you publish a release on GitHub (Releases → Draft a new release).
 # Tag the release with the version in package.json, e.g. v0.3.0.
 #
-# It publishes with npm's trusted publishing, so no npm token needs to be
-# stored in GitHub. One-time setup on npmjs.com, after the first publish:
-# the package's Settings → Trusted publishing → GitHub Actions, with this
-# repository and the workflow file name publish.yml.
-# Until then, add an npm automation token as the NPM_TOKEN repository secret.
+# It uses npm's trusted publishing, so no npm token is stored anywhere:
+# npm checks that the release came from this workflow in this repository
+# (set up on npmjs.com under the package's Settings → Trusted publishing).
+#
+# Releases are staged, not published: the new version waits under
+# Staged Packages on npmjs.com until a maintainer approves it there, behind
+# two-factor login. So nothing reaches people who install habitat without a
+# person saying yes, even if this repository were ever compromised.
 
 on:
   release:
@@ -44,6 +47,5 @@ jobs:
       - run: npm run validate
       - run: npm test
 
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Stage the release on npm (approve it on npmjs.com to publish)
+        run: npm stage publish

@@ -366,7 +366,10 @@ If you try habitat on your own design system, I'd love to hear what your before 
 
 1. Change `version` in `package.json` (for example to `0.4.0`), and merge that change into main.
 2. On GitHub, go to Releases and draft a new release. Give it a tag that matches the version with a `v` in front (`v0.4.0`), targeting main, and publish it.
-3. GitHub runs the tests and publishes the package to npm. It stops if the tag and the version don't match. You can follow it under the Actions tab, and the new version is usually on npm within a few minutes.
+3. GitHub runs the tests and stages the package on npm. It stops if the tag and the version don't match. You can follow it under the Actions tab.
+4. On npmjs.com, open **Staged Packages** (in the menu on the left of your account page), check the new version, and approve it. That's when it goes live. Nothing reaches people who install habitat without that click.
+
+Publishing uses npm's trusted publishing, so there's no npm token to store or renew.
 
 Then update the `@v0.4.0` in the GitHub Action example above to the new tag.
 
