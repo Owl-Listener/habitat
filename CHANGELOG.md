@@ -3,7 +3,11 @@
 What changed in each version of habitat, newest first. Versions follow the
 npm package, [@owl-listener/habitat](https://www.npmjs.com/package/@owl-listener/habitat).
 
-## 0.5.0 (unreleased)
+## Unreleased
+
+- **Releases are staged.** A GitHub release now stages the new version on npm, and it goes live only when a maintainer approves it on npmjs.com. Publishing uses npm's trusted publishing, so there's no token to store or renew.
+
+## 0.5.0 (2026-11-12)
 
 - **A fairer eval.** `habitat eval` now runs three conditions instead of two. Alongside the baseline (nothing at all) and habitat (the whole design folder) there's **facts only**: your tokens and components, without any of the reasons. A baseline that never saw your tokens can't use them, so part of its count was guaranteed. The report now leads with facts only against habitat, which is what writing down your judgement adds. `--only` takes a list, e.g. `--only facts,habitat`.
 - **eval says when there's no API key**, before it sends anything, instead of failing six times with an error from the SDK. If a key is rejected, it stops at the first request.
